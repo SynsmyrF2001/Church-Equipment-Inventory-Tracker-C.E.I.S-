@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+
+{% block title %}Interactive Tutorial - Church Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-4">
+                <h1 class="display-5">
+                    <i data-feather="play-circle" class="me-3"></i>
+                    Welcome to Your Equipment Manager!
+                </h1>
+                <p class="lead">Let's take a quick tour to help you get started with managing your church equipment.</p>
+            </div>
+
+            <!-- Tutorial Steps -->
+            <div id="tutorialContainer">
+                <!-- Step 1: Introduction -->
+                <div class="tutorial-step" id="step-1">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h4>
+                                <i data-feather="info" class="me-2"></i>
+                                Step 1: Understanding the System
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar" role="progressbar" style="width: 14%"></div>
+                            </div>
+                        </div>
+                        <div class="card-body text-center p-5">
+                            <div class="row">
+                                <div class="col-md-4 mb-4">
+                                    <div class="feature-icon">
+                                        <i data-feather="package" size="48" class="text-primary mb-3"></i>
+                                    </div>
+                                    <h5>Track Equipment</h5>
+                                    <p>Keep a digital record of all your microphones, cameras, speakers, and other tech equipment.</p>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="feature-icon">
+                                        <i data-feather="clock" size="48" class="text-warning mb-3"></i>
+                                    </div>
+                                    <h5>Check In/Out</h5>
+                                    <p>Know who has what equipment and when they took it, making accountability simple.</p>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="feature-icon">
+                                        <i data-feather="bar-chart-2" size="48" class="text-success mb-3"></i>
+                                    </div>
+                                    <h5>Reports & Insights</h5>
+                                    <p>See usage patterns and equipment status to make better decisions.</p>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-4">
+                                <strong>Perfect for churches!</strong> Whether you're a volunteer, staff member, or tech director, this system makes equipment management simple and stress-free.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Dashboard Overview -->
+                <div class="tutorial-step d-none" id="step-2">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-success text-white text-center">
+                            <h4>
+                                <i data-feather="home" class="me-2"></i>
+                                Step 2: Your Dashboard
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-white" role="progressbar" style="width: 28%"></div>
+                            </div>
+                        </div>
+                        <div class="card-body p-5">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h5><i data-feather="activity" class="me-2"></i>At a Glance</h5>
+                                    <p>Your dashboard shows:</p>
+                                    <ul class="list-unstyled">
+                                        <li><span class="badge bg-primary me-2">📦</span> Total equipment count</li>
+                                        <li><span class="badge bg-success me-2">✅</span> Available equipment</li>
+                                        <li><span class="badge bg-warning me-2">⏰</span> Currently in use</li>
+                                        <li><span class="badge bg-danger me-2">🔧</span> Needs maintenance</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5><i data-feather="search" class="me-2"></i>Find Equipment Fast</h5>
+                                    <p>Use the search box to quickly find:</p>
+                                    <ul class="list-unstyled">
+                                        <li>📱 Equipment by name</li>
+                                        <li>🏷️ Filter by category</li>
+                                        <li>🔍 Filter by status</li>
+                                        <li>⚡ Recent activity</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="alert alert-warning">
+                                <strong>👀 Look for the orange "Getting Started" box</strong> on your dashboard when you first arrive - it will guide you to add your first equipment!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Adding Equipment -->
+                <div class="tutorial-step d-none" id="step-3">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-info text-white text-center">
+                            <h4>
+                                <i data-feather="plus" class="me-2"></i>
+                                Step 3: Adding Equipment
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-white" role="progressbar" style="width: 42%"></div>
+                            </div>
+                        </div>
+                        <div class="card-body p-5">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5>Easy Equipment Registration</h5>
+                                    <p class="mb-3">Only two things are required to add equipment:</p>
+                                    <div class="row mb-4">
+                                        <div class="col-6">
+                                            <div class="p-3 bg-light rounded">
+                                                <strong>1. Equipment Name</strong>
+                                                <br><small class="text-muted">e.g., "Wireless Microphone", "Main Camera"</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="p-3 bg-light rounded">
+                                                <strong>2. Category</strong>
+                                                <br><small class="text-muted">Audio, Video, Lighting, etc.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p><strong>Optional details help you stay organized:</strong></p>
+                                    <ul>
+                                        <li>📝 Model number and serial number</li>
+                                        <li>📍 Where it's normally stored</li>
+                                        <li>💰 Purchase price and date</li>
+                                        <li>📋 Description or notes</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="bg-primary text-white p-3 rounded text-center">
+                                        <i data-feather="lightbulb" size="32" class="mb-2"></i>
+                                        <h6>Pro Tips</h6>
+                                        <small>
+                                            • Use clear, descriptive names<br>
+                                            • Include location info<br>
+                                            • Take photos for reference<br>
+                                            • Add serial numbers for expensive items
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Check In/Out Process -->
+                <div class="tutorial-step d-none" id="step-4">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-warning text-dark text-center">
+                            <h4>
+                                <i data-feather="repeat" class="me-2"></i>
+                                Step 4: Check In & Check Out
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-dark" role="progressbar" style="width: 57%"></div>
+                            </div>
+                        </div>
+                        <div class="card-body p-5">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-light h-100">
+                                        <div class="card-body">
+                                            <h5 class="text-warning">
+                                                <i data-feather="log-out" class="me-2"></i>
+                                                Checking Out
+                                            </h5>
+                                            <p><strong>When someone takes equipment:</strong></p>
+                                            <ol>
+                                                <li>Find the equipment in your list</li>
+                                                <li>Click the <span class="badge bg-warning">Check Out</span> button</li>
+                                                <li>Enter who's taking it</li>
+                                                <li>Set expected return date (optional)</li>
+                                                <li>Note the condition</li>
+                                            </ol>
+                                            <div class="alert alert-warning">
+                                                The equipment will now show as "In Use" 📍
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light h-100">
+                                        <div class="card-body">
+                                            <h5 class="text-success">
+                                                <i data-feather="log-in" class="me-2"></i>
+                                                Checking In
+                                            </h5>
+                                            <p><strong>When equipment comes back:</strong></p>
+                                            <ol>
+                                                <li>Find the equipment (marked "In Use")</li>
+                                                <li>Click the <span class="badge bg-success">Check In</span> button</li>
+                                                <li>Enter who returned it</li>
+                                                <li>Check the condition</li>
+                                                <li>Add any notes if needed</li>
+                                            </ol>
+                                            <div class="alert alert-success">
+                                                Equipment returns to "Available" status ✅
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-3 bg-info text-white rounded">
+                                <strong>🔧 Maintenance Mode:</strong> If equipment comes back damaged, mark it as "Poor" condition and it will automatically go into maintenance mode.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Language & Accessibility -->
+                <div class="tutorial-step d-none" id="step-5">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-secondary text-white text-center">
+                            <h4>
+                                <i data-feather="globe" class="me-2"></i>
+                                Step 5: Language & Accessibility
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-white" role="progressbar" style="width: 71%"></div>
+                            </div>
+                        </div>
+                        <div class="card-body p-5">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5><i data-feather="flag" class="me-2"></i>Multiple Languages</h5>
+                                    <p>Switch languages anytime using the language menu:</p>
+                                    <div class="mb-3">
+                                        <span class="badge bg-primary me-2">🇺🇸 English</span>
+                                        <span class="badge bg-primary me-2">🇫🇷 Français</span>
+                                        <span class="badge bg-primary me-2">🇭🇹 Kreyòl Ayisyen</span>
+                                    </div>
+                                    <p><small class="text-muted">Look for the <i data-feather="globe" size="16"></i> globe icon in the top navigation.</small></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5><i data-feather="smartphone" class="me-2"></i>Works Everywhere</h5>
+                                    <p>Access your inventory from:</p>
+                                    <ul class="list-unstyled">
+                                        <li>📱 Phones and tablets</li>
+                                        <li>💻 Computers and laptops</li>
+                                        <li>🌐 Any web browser</li>
+                                        <li>⚡ Online or offline-ready</li>
+                                    </ul>
+                                    <div class="alert alert-info">
+                                        <small><strong>Mobile-friendly:</strong> All buttons and text scale perfectly for touch screens!</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Getting Help -->
+                <div class="tutorial-step d-none" id="step-6">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-danger text-white text-center">
+                            <h4>
+                                <i data-feather="help-circle" class="me-2"></i>
+                                Step 6: Getting Help
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-white" role="progressbar" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="card-body p-5">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center mb-4">
+                                        <i data-feather="help-circle" size="48" class="text-info mb-3"></i>
+                                        <h6>Need Help?</h6>
+                                        <p>Click the <strong>Help</strong> button in the navigation to return to this tutorial anytime.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center mb-4">
+                                        <i data-feather="message-circle" size="48" class="text-success mb-3"></i>
+                                        <h6>Tooltips & Hints</h6>
+                                        <p>Hover over buttons and fields to see helpful tips and explanations.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center mb-4">
+                                        <i data-feather="users" size="48" class="text-warning mb-3"></i>
+                                        <h6>Train Others</h6>
+                                        <p>Share this tutorial with other volunteers and staff members.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-success mt-4">
+                                <h6><i data-feather="check-circle" class="me-2"></i>Quick Reference</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Common Tasks:</strong>
+                                        <ul class="mb-0">
+                                            <li>Add equipment → "Add Equipment" button</li>
+                                            <li>Find equipment → Use search box</li>
+                                            <li>Check out → Orange button next to equipment</li>
+                                            <li>Check in → Green button next to equipment</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Status Colors:</strong>
+                                        <ul class="mb-0">
+                                            <li><span class="badge bg-success">Green</span> = Available</li>
+                                            <li><span class="badge bg-warning text-dark">Orange</span> = In Use</li>
+                                            <li><span class="badge bg-danger">Red</span> = Maintenance</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 7: Ready to Start -->
+                <div class="tutorial-step d-none" id="step-7">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-success text-white text-center">
+                            <h4>
+                                <i data-feather="check-circle" class="me-2"></i>
+                                You're Ready to Go!
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-white" role="progressbar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="card-body text-center p-5">
+                            <div class="mb-4">
+                                <i data-feather="award" size="64" class="text-success mb-3"></i>
+                                <h3>Congratulations!</h3>
+                                <p class="lead">You now know how to use the Church Equipment Inventory system like a pro!</p>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <strong>✅ Track Equipment</strong>
+                                        <br><small>Add and organize your equipment</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <strong>⏰ Manage Checkouts</strong>
+                                        <br><small>Know who has what and when</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <strong>📊 Generate Reports</strong>
+                                        <br><small>See usage patterns and insights</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                                <a href="{{ url_for('add_equipment') }}" class="btn btn-primary btn-lg">
+                                    <i data-feather="plus" class="me-2"></i>
+                                    Add Your First Equipment
+                                </a>
+                                <button type="button" class="btn btn-success btn-lg" id="completeTutorial">
+                                    <i data-feather="home" class="me-2"></i>
+                                    Go to Dashboard
+                                </button>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <small class="text-muted">
+                                    💡 Remember: You can access this tutorial anytime by clicking "Help" in the navigation menu
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="d-flex justify-content-between mt-4" id="tutorialNavigation">
+                <button type="button" class="btn btn-outline-secondary" id="prevStep" disabled>
+                    <i data-feather="arrow-left" class="me-1"></i>
+                    Previous
+                </button>
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="text-muted">Step <span id="currentStep">1</span> of 7</span>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.location.href='{{ url_for('index') }}'">
+                        Skip Tutorial
+                    </button>
+                </div>
+                <button type="button" class="btn btn-primary" id="nextStep">
+                    Next
+                    <i data-feather="arrow-right" class="ms-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStepNum = 1;
+    const totalSteps = 7;
+    
+    const prevBtn = document.getElementById('prevStep');
+    const nextBtn = document.getElementById('nextStep');
+    const stepIndicator = document.getElementById('currentStep');
+    const completeTutorialBtn = document.getElementById('completeTutorial');
+    
+    function showStep(stepNum) {
+        // Hide all steps
+        document.querySelectorAll('.tutorial-step').forEach(step => {
+            step.classList.add('d-none');
+        });
+        
+        // Show current step
+        document.getElementById(`step-${stepNum}`).classList.remove('d-none');
+        
+        // Update navigation
+        stepIndicator.textContent = stepNum;
+        prevBtn.disabled = stepNum === 1;
+        
+        if (stepNum === totalSteps) {
+            nextBtn.style.display = 'none';
+        } else {
+            nextBtn.style.display = 'block';
+        }
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    prevBtn.addEventListener('click', function() {
+        if (currentStepNum > 1) {
+            currentStepNum--;
+            showStep(currentStepNum);
+        }
+    });
+    
+    nextBtn.addEventListener('click', function() {
+        if (currentStepNum < totalSteps) {
+            currentStepNum++;
+            showStep(currentStepNum);
+        }
+    });
+    
+    if (completeTutorialBtn) {
+        completeTutorialBtn.addEventListener('click', function() {
+            fetch('{{ url_for("complete_tutorial") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                }
+            });
+        });
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft' && currentStepNum > 1) {
+            currentStepNum--;
+            showStep(currentStepNum);
+        } else if (e.key === 'ArrowRight' && currentStepNum < totalSteps) {
+            currentStepNum++;
+            showStep(currentStepNum);
+        }
+    });
+    
+    // Initialize
+    showStep(1);
+});
+</script>
+{% endblock %}

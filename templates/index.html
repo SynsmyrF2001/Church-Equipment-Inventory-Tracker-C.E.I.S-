@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Church Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">
+            <i data-feather="home" class="me-3"></i>
+            Equipment Dashboard
+        </h1>
+        <p class="lead">Welcome! Here you can manage and track all your church technical equipment.</p>
+        {% if total_equipment == 0 %}
+        <div class="alert alert-info">
+            <h5><i data-feather="info" class="me-2"></i>Getting Started</h5>
+            <p class="mb-3">You don't have any equipment registered yet. Let's get you started!</p>
+            <div class="d-flex flex-column flex-sm-row gap-2">
+                <a href="{{ url_for('tutorial') }}" class="btn btn-outline-primary">
+                    <i data-feather="play-circle" class="me-1"></i>Take the Tutorial (5 min)
+                </a>
+                <a href="{{ url_for('add_equipment') }}" class="btn btn-primary">
+                    <i data-feather="plus" class="me-1"></i>Add Your First Equipment
+                </a>
+            </div>
+        </div>
+        {% elif not session.get('tutorial_completed') %}
+        <div class="alert alert-warning alert-dismissible fade show">
+            <h6><i data-feather="help-circle" class="me-2"></i>New to the system?</h6>
+            <p class="mb-2">Take our quick 5-minute tutorial to learn how to use all the features effectively.</p>
+            <a href="{{ url_for('tutorial') }}" class="btn btn-outline-warning btn-sm">
+                <i data-feather="play-circle" class="me-1"></i>Start Tutorial
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-primary text-white h-100" data-bs-toggle="tooltip" title="Total number of equipment items in your inventory">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title mb-1">{{ total_equipment }}</h4>
+                        <p class="card-text mb-0">Total Equipment</p>
+                        <small class="opacity-75">All registered items</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i data-feather="package" size="36"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-success text-white h-100" data-bs-toggle="tooltip" title="Equipment ready to be checked out">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title mb-1">{{ available_count }}</h4>
+                        <p class="card-text mb-0">Available</p>
+                        <small class="opacity-75">Ready to use</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i data-feather="check-circle" size="36"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-warning text-dark h-100" data-bs-toggle="tooltip" title="Equipment currently checked out by someone">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title mb-1">{{ in_use_count }}</h4>
+                        <p class="card-text mb-0">In Use</p>
+                        <small class="opacity-75">Currently out</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i data-feather="clock" size="36"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-danger text-white h-100" data-bs-toggle="tooltip" title="Equipment that needs repair or maintenance">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title mb-1">{{ maintenance_count }}</h4>
+                        <p class="card-text mb-0">Maintenance</p>
+                        <small class="opacity-75">Needs attention</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i data-feather="tool" size="36"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overdue Items Alert -->
+{% if overdue_items %}
+<div class="alert alert-danger" role="alert">
+    <h5><i data-feather="alert-triangle" class="me-2"></i>Overdue Equipment</h5>
+    <ul class="mb-0">
+        {% for item in overdue_items %}
+        <li>
+            <strong>{{ item.equipment.name }}</strong> - 
+            Checked out by {{ item.checked_out_by }} on {{ item.checked_out_at.strftime('%Y-%m-%d') }}, 
+            expected back {{ item.expected_return_date.strftime('%Y-%m-%d') }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- Search and Filter -->
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i data-feather="search" class="me-2"></i>
+            Find Equipment
+        </h5>
+        <small class="text-muted">Search by name or filter by category and status</small>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('index') }}" id="searchForm">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label for="search" class="form-label">
+                        <i data-feather="type" size="16" class="me-1"></i>
+                        Equipment Name
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i data-feather="search" size="16"></i></span>
+                        <input type="text" class="form-control" name="search" id="search" 
+                               value="{{ search_query }}" placeholder="Type equipment name here...">
+                    </div>
+                    <div class="form-text">Try "microphone", "camera", or "speaker"</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="category" class="form-label">
+                        <i data-feather="tag" size="16" class="me-1"></i>
+                        Category
+                    </label>
+                    <select class="form-select" name="category" id="category">
+                        <option value="">All Categories</option>
+                        <option value="audio" {{ 'selected' if category_filter == 'audio' }}>🎤 Audio Equipment</option>
+                        <option value="video" {{ 'selected' if category_filter == 'video' }}>📹 Video Equipment</option>
+                        <option value="lighting" {{ 'selected' if category_filter == 'lighting' }}>💡 Lighting Equipment</option>
+                        <option value="instruments" {{ 'selected' if category_filter == 'instruments' }}>🎸 Musical Instruments</option>
+                        <option value="cables" {{ 'selected' if category_filter == 'cables' }}>🔌 Cables & Accessories</option>
+                        <option value="computers" {{ 'selected' if category_filter == 'computers' }}>💻 Computers & Electronics</option>
+                        <option value="other" {{ 'selected' if category_filter == 'other' }}>📦 Other</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="status" class="form-label">
+                        <i data-feather="activity" size="16" class="me-1"></i>
+                        Status
+                    </label>
+                    <select class="form-select" name="status" id="status">
+                        <option value="">All Status</option>
+                        <option value="available" {{ 'selected' if status_filter == 'available' }}>✅ Available</option>
+                        <option value="in-use" {{ 'selected' if status_filter == 'in-use' }}>⏰ In Use</option>
+                        <option value="maintenance" {{ 'selected' if status_filter == 'maintenance' }}>🔧 Maintenance</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="search" class="me-1"></i>
+                            Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% if search_query or category_filter or status_filter %}
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-info me-2">Filtered Results</span>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i data-feather="x" class="me-1"></i>
+                            Show All Equipment
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Equipment List -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i data-feather="list" class="me-2"></i>
+            Equipment Inventory
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if equipment_list %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Equipment</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Current User</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipment in equipment_list %}
+                    <tr>
+                        <td>
+                            <div>
+                                <strong>{{ equipment.name }}</strong>
+                                {% if equipment.model %}
+                                <br><small class="text-muted">{{ equipment.model }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ equipment.category.title() }}</span>
+                        </td>
+                        <td>
+                            {% if equipment.status == 'available' %}
+                                <span class="badge bg-success">Available</span>
+                            {% elif equipment.status == 'in-use' %}
+                                <span class="badge bg-warning text-dark">In Use</span>
+                            {% else %}
+                                <span class="badge bg-danger">Maintenance</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ equipment.location or '-' }}</td>
+                        <td>
+                            {% if equipment.current_checkout %}
+                                {{ equipment.current_checkout.checked_out_by }}
+                                <br><small class="text-muted">{{ equipment.current_checkout.checked_out_at.strftime('%Y-%m-%d') }}</small>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ url_for('equipment_detail', id=equipment.id) }}" 
+                                   class="btn btn-outline-primary" title="View Details">
+                                    <i data-feather="eye"></i>
+                                </a>
+                                {% if equipment.status == 'available' %}
+                                <a href="{{ url_for('checkout_equipment', id=equipment.id) }}" 
+                                   class="btn btn-outline-warning" title="Check Out">
+                                    <i data-feather="log-out"></i>
+                                </a>
+                                {% elif equipment.status == 'in-use' %}
+                                <a href="{{ url_for('checkin_equipment', id=equipment.id) }}" 
+                                   class="btn btn-outline-success" title="Check In">
+                                    <i data-feather="log-in"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i data-feather="package" size="64" class="text-muted mb-3"></i>
+                <h5 class="text-muted">No equipment found</h5>
+                <p class="text-muted">
+                    {% if search_query or category_filter or status_filter %}
+                        No equipment matches your search criteria.
+                    {% else %}
+                        Your inventory is empty. Let's add some equipment!
+                    {% endif %}
+                </p>
+            </div>
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                {% if search_query or category_filter or status_filter %}
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        <i data-feather="refresh-cw" class="me-1"></i>
+                        Show All Equipment
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('add_equipment') }}" class="btn btn-primary">
+                    <i data-feather="plus" class="me-1"></i>
+                    Add Equipment
+                </a>
+            </div>
+            {% if not (search_query or category_filter or status_filter) %}
+            <div class="mt-4">
+                <small class="text-muted">
+                    💡 Tip: Start by adding microphones, cameras, speakers, or other tech equipment your church uses
+                </small>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Activity -->
+{% if recent_activity %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i data-feather="activity" class="me-2"></i>
+            Recent Activity
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="list-group list-group-flush">
+            {% for activity in recent_activity %}
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">{{ activity.equipment.name }}</h6>
+                    <small>{{ activity.checked_out_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                <p class="mb-1">
+                    Checked out by <strong>{{ activity.checked_out_by }}</strong>
+                    {% if activity.checked_in_at %}
+                        and checked in by <strong>{{ activity.checked_in_by }}</strong>
+                    {% endif %}
+                </p>
+                {% if activity.notes %}
+                <small class="text-muted">{{ activity.notes }}</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Church Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">Equipment Reports</h1>
+        <p class="lead">Usage statistics and equipment performance analytics</p>
+    </div>
+    <div class="col-auto">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('export_equipment') }}" class="btn btn-outline-primary">
+                <i data-feather="download" class="me-1"></i>
+                Export Equipment
+            </a>
+            <a href="{{ url_for('export_history') }}" class="btn btn-outline-primary">
+                <i data-feather="download" class="me-1"></i>
+                Export History
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Usage Chart -->
+{% if monthly_stats %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i data-feather="bar-chart-2" class="me-2"></i>
+            Monthly Checkout Activity
+        </h5>
+    </div>
+    <div class="card-body">
+        <canvas id="monthlyChart" height="100"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<!-- Equipment Usage Statistics -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i data-feather="trending-up" class="me-2"></i>
+            Equipment Usage Statistics
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if equipment_stats %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Equipment</th>
+                        <th>Category</th>
+                        <th>Total Checkouts</th>
+                        <th>Total Days Used</th>
+                        <th>Average Duration</th>
+                        <th>Current Status</th>
+                        <th>Utilization</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in equipment_stats %}
+                    <tr>
+                        <td>
+                            <div>
+                                <strong>{{ stat.equipment.name }}</strong>
+                                {% if stat.equipment.model %}
+                                <br><small class="text-muted">{{ stat.equipment.model }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ stat.equipment.category.title() }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ stat.total_checkouts }}</span>
+                        </td>
+                        <td>{{ stat.total_usage_days }}</td>
+                        <td>
+                            {% if stat.total_checkouts > 0 %}
+                                {{ "%.1f"|format(stat.total_usage_days / stat.total_checkouts) }} days
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if stat.equipment.status == 'available' %}
+                                <span class="badge bg-success">Available</span>
+                            {% elif stat.equipment.status == 'in-use' %}
+                                <span class="badge bg-warning text-dark">In Use</span>
+                                {% if stat.active_checkout %}
+                                <br><small class="text-muted">{{ stat.active_checkout.checked_out_by }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-danger">Maintenance</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set utilization_score = stat.total_checkouts %}
+                            {% if utilization_score == 0 %}
+                                <span class="badge bg-secondary">Not Used</span>
+                            {% elif utilization_score <= 2 %}
+                                <span class="badge bg-danger">Low</span>
+                            {% elif utilization_score <= 5 %}
+                                <span class="badge bg-warning text-dark">Medium</span>
+                            {% else %}
+                                <span class="badge bg-success">High</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i data-feather="bar-chart-2" size="64" class="text-muted mb-3"></i>
+            <h5 class="text-muted">No usage data available</h5>
+            <p class="text-muted">Equipment usage statistics will appear here after checkout activity begins.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Equipment by Category -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i data-feather="pie-chart" class="me-2"></i>
+                    Equipment by Category
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i data-feather="activity" class="me-2"></i>
+                    Equipment by Status
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ equipment_stats|length }}</h3>
+                <p class="text-muted mb-0">Total Equipment</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                {% set total_checkouts = equipment_stats|sum(attribute='total_checkouts') %}
+                <h3 class="text-success">{{ total_checkouts }}</h3>
+                <p class="text-muted mb-0">Total Checkouts</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                {% set total_days = equipment_stats|sum(attribute='total_usage_days') %}
+                <h3 class="text-warning">{{ total_days }}</h3>
+                <p class="text-muted mb-0">Total Usage Days</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                {% set avg_duration = (total_days / total_checkouts) if total_checkouts > 0 else 0 %}
+                <h3 class="text-info">{{ "%.1f"|format(avg_duration) }}</h3>
+                <p class="text-muted mb-0">Avg. Duration (days)</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Monthly Usage Chart
+{% if monthly_stats %}
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+const monthlyData = {{ monthly_stats|tojson }};
+const monthlyLabels = Object.keys(monthlyData).sort();
+const monthlyValues = monthlyLabels.map(month => monthlyData[month]);
+
+new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+        labels: monthlyLabels,
+        datasets: [{
+            label: 'Checkouts',
+            data: monthlyValues,
+            borderColor: 'var(--bs-primary)',
+            backgroundColor: 'var(--bs-primary)',
+            tension: 0.1,
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+{% endif %}
+
+// Equipment by Category Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+const categoryData = {};
+{% for stat in equipment_stats %}
+const category = "{{ stat.equipment.category }}";
+categoryData[category] = (categoryData[category] || 0) + 1;
+{% endfor %}
+
+new Chart(categoryCtx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(categoryData),
+        datasets: [{
+            data: Object.values(categoryData),
+            backgroundColor: [
+                'var(--bs-primary)',
+                'var(--bs-success)',
+                'var(--bs-warning)',
+                'var(--bs-danger)',
+                'var(--bs-info)',
+                'var(--bs-secondary)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Equipment by Status Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusData = {};
+{% for stat in equipment_stats %}
+const status = "{{ stat.equipment.status }}";
+statusData[status] = (statusData[status] || 0) + 1;
+{% endfor %}
+
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(statusData).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+        datasets: [{
+            data: Object.values(statusData),
+            backgroundColor: [
+                'var(--bs-success)', // available
+                'var(--bs-warning)', // in-use
+                'var(--bs-danger)'   // maintenance
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
