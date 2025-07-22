@@ -1,9 +1,6 @@
 // Main JavaScript for Church Equipment Inventory System
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips
-    initializeTooltips();
-    
     // Initialize search functionality
     initializeSearch();
     
@@ -16,24 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize auto-refresh for dashboard
     initializeAutoRefresh();
     
-    // Initialize novice-friendly features
-    initializeNoviceFeatures();
-    
-    // Initialize tutorial features
-    initializeTutorialFeatures();
-    
     console.log('Church Equipment Inventory System initialized');
 });
 
-/**
- * Initialize Bootstrap tooltips
- */
-function initializeTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-}
+// Tooltips disabled for cleaner interface
 
 /**
  * Initialize search functionality
@@ -446,284 +429,23 @@ function copyToClipboard(text) {
     }
 }
 
-/**
- * Initialize novice-friendly features
- */
-function initializeNoviceFeatures() {
-    // Add helpful tooltips to all interactive elements
-    addHelpfulTooltips();
-    
-    // Initialize smart form assistance
-    initializeSmartFormHelp();
-    
-    // Add visual feedback for button clicks
-    addButtonFeedback();
-    
-    // Initialize contextual help hints
-    initializeContextualHelp();
-}
+// Novice features disabled for cleaner interface
 
-/**
- * Add helpful tooltips throughout the interface
- */
-function addHelpfulTooltips() {
-    // Status badges
-    document.querySelectorAll('.badge').forEach(badge => {
-        if (badge.textContent.includes('Available')) {
-            badge.setAttribute('data-bs-toggle', 'tooltip');
-            badge.setAttribute('title', 'This equipment is ready to be checked out');
-        } else if (badge.textContent.includes('In Use')) {
-            badge.setAttribute('data-bs-toggle', 'tooltip');
-            badge.setAttribute('title', 'Someone has checked out this equipment');
-        } else if (badge.textContent.includes('Maintenance')) {
-            badge.setAttribute('data-bs-toggle', 'tooltip');
-            badge.setAttribute('title', 'This equipment needs repair or servicing');
-        }
-    });
-    
-    // Action buttons
-    document.querySelectorAll('[data-feather="log-out"]').forEach(btn => {
-        btn.closest('a, button').setAttribute('data-bs-toggle', 'tooltip');
-        btn.closest('a, button').setAttribute('title', 'Take this equipment for use');
-    });
-    
-    document.querySelectorAll('[data-feather="log-in"]').forEach(btn => {
-        btn.closest('a, button').setAttribute('data-bs-toggle', 'tooltip');
-        btn.closest('a, button').setAttribute('title', 'Return this equipment');
-    });
-    
-    document.querySelectorAll('[data-feather="eye"]').forEach(btn => {
-        btn.closest('a, button').setAttribute('data-bs-toggle', 'tooltip');
-        btn.closest('a, button').setAttribute('title', 'View details and history');
-    });
-}
+// Tooltips disabled for cleaner interface
 
-/**
- * Initialize smart form assistance
- */
-function initializeSmartFormHelp() {
-    // Equipment name suggestions
-    const nameInput = document.querySelector('input[name="name"]');
-    if (nameInput) {
-        const suggestions = [
-            'Wireless Microphone', 'Main Camera', 'Spotlight', 'Sound Board',
-            'Projector', 'Guitar', 'Keyboard', 'Speaker', 'Laptop', 'Tablet',
-            'HDMI Cable', 'Power Cable', 'Microphone Stand'
-        ];
-        
-        nameInput.addEventListener('focus', function() {
-            if (!this.value && !document.querySelector('.name-suggestions')) {
-                showNameSuggestions(this, suggestions);
-            }
-        });
-    }
-    
-    // Auto-complete location field
-    const locationInput = document.querySelector('input[name="location"]');
-    if (locationInput) {
-        const locations = [
-            'Sound Booth', 'Storage Room A', 'Storage Room B', 'Sanctuary',
-            'Fellowship Hall', 'Office', 'Main Stage', 'Tech Room'
-        ];
-        
-        locationInput.addEventListener('input', function() {
-            showLocationSuggestions(this, locations);
-        });
-    }
-}
+// Smart form assistance disabled for cleaner interface
 
-/**
- * Show name suggestions for equipment
- */
-function showNameSuggestions(input, suggestions) {
-    const suggestionDiv = document.createElement('div');
-    suggestionDiv.className = 'name-suggestions mt-2';
-    suggestionDiv.innerHTML = `
-        <small class="text-muted">Common equipment names:</small>
-        <div class="d-flex flex-wrap gap-1 mt-1">
-            ${suggestions.slice(0, 6).map(name => 
-                `<button type="button" class="btn btn-outline-secondary btn-sm suggestion-btn" data-name="${name}">${name}</button>`
-            ).join('')}
-        </div>
-    `;
-    
-    input.parentNode.appendChild(suggestionDiv);
-    
-    // Handle suggestion clicks
-    suggestionDiv.addEventListener('click', function(e) {
-        if (e.target.classList.contains('suggestion-btn')) {
-            input.value = e.target.dataset.name;
-            suggestionDiv.remove();
-            input.focus();
-        }
-    });
-    
-    // Remove suggestions when clicking elsewhere
-    document.addEventListener('click', function(e) {
-        if (!input.contains(e.target) && !suggestionDiv.contains(e.target)) {
-            suggestionDiv.remove();
-        }
-    }, { once: true });
-}
+// Name suggestions disabled for cleaner interface
 
-/**
- * Show location suggestions
- */
-function showLocationSuggestions(input, locations) {
-    const query = input.value.toLowerCase();
-    const matches = locations.filter(loc => loc.toLowerCase().includes(query));
-    
-    // Remove existing suggestions
-    const existing = input.parentNode.querySelector('.location-suggestions');
-    if (existing) existing.remove();
-    
-    if (matches.length > 0 && query.length > 0) {
-        const suggestionDiv = document.createElement('div');
-        suggestionDiv.className = 'location-suggestions position-absolute bg-white border rounded shadow-sm';
-        suggestionDiv.style.zIndex = '1000';
-        suggestionDiv.style.top = '100%';
-        suggestionDiv.style.left = '0';
-        suggestionDiv.style.right = '0';
-        
-        suggestionDiv.innerHTML = matches.slice(0, 5).map(location => 
-            `<div class="p-2 suggestion-item" style="cursor: pointer;" data-location="${location}">${location}</div>`
-        ).join('');
-        
-        input.parentNode.style.position = 'relative';
-        input.parentNode.appendChild(suggestionDiv);
-        
-        suggestionDiv.addEventListener('click', function(e) {
-            if (e.target.classList.contains('suggestion-item')) {
-                input.value = e.target.dataset.location;
-                suggestionDiv.remove();
-            }
-        });
-    }
-}
+// Location suggestions disabled for cleaner interface
 
-/**
- * Add visual feedback for button clicks
- */
-function addButtonFeedback() {
-    document.addEventListener('click', function(e) {
-        if (e.target.matches('.btn, .btn *')) {
-            const button = e.target.closest('.btn');
-            if (button && !button.disabled) {
-                button.classList.add('pulse');
-                setTimeout(() => button.classList.remove('pulse'), 600);
-            }
-        }
-    });
-}
+// Button feedback disabled for cleaner interface
 
-/**
- * Initialize contextual help hints
- */
-function initializeContextualHelp() {
-    // Add help hints to forms
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        const requiredFields = form.querySelectorAll('input[required], select[required]');
-        if (requiredFields.length > 0) {
-            const helpHint = document.createElement('div');
-            helpHint.className = 'alert alert-info mb-3';
-            helpHint.innerHTML = `
-                <small>
-                    <i data-feather="info" size="16" class="me-1"></i>
-                    <strong>Required fields are marked with *</strong> - Fill these out to continue.
-                </small>
-            `;
-            form.insertBefore(helpHint, form.firstChild);
-            
-            if (typeof feather !== 'undefined') {
-                feather.replace();
-            }
-        }
-    });
-    
-    // Add equipment status explanations
-    if (window.location.pathname === '/') {
-        setTimeout(() => {
-            addStatusExplanations();
-        }, 1000);
-    }
-}
+// Contextual help disabled for cleaner interface
 
-/**
- * Add status explanations to dashboard
- */
-function addStatusExplanations() {
-    const statusCards = document.querySelectorAll('.stat-card');
-    statusCards.forEach((card, index) => {
-        const explanations = [
-            'Total number of equipment items registered in your system',
-            'Equipment that is ready to be checked out and used',
-            'Equipment currently being used by someone (checked out)',
-            'Equipment that needs repair, maintenance, or is temporarily unavailable'
-        ];
-        
-        if (explanations[index]) {
-            card.addEventListener('mouseenter', function() {
-                showToast(explanations[index], 'info');
-            });
-        }
-    });
-}
+// Tutorial highlights disabled for cleaner interface
 
-/**
- * Initialize tutorial features
- */
-function initializeTutorialFeatures() {
-    // Highlight tutorial button for new users
-    const tutorialBtn = document.getElementById('tutorialLink');
-    if (tutorialBtn && !localStorage.getItem('tutorial_completed')) {
-        tutorialBtn.classList.add('pulse');
-        tutorialBtn.style.background = 'rgba(255, 193, 7, 0.2)';
-        tutorialBtn.style.borderRadius = '4px';
-    }
-    
-    // Add keyboard shortcuts help
-    initializeKeyboardShortcuts();
-}
-
-/**
- * Initialize keyboard shortcuts
- */
-function initializeKeyboardShortcuts() {
-    document.addEventListener('keydown', function(e) {
-        // Ctrl/Cmd + H for help
-        if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
-            e.preventDefault();
-            window.location.href = '/tutorial';
-        }
-        
-        // Ctrl/Cmd + N for new equipment
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-            e.preventDefault();
-            const addEquipmentLink = document.querySelector('a[href*="add_equipment"]');
-            if (addEquipmentLink) {
-                window.location.href = addEquipmentLink.href;
-            }
-        }
-        
-        // Escape to clear search
-        if (e.key === 'Escape') {
-            const searchInput = document.getElementById('search');
-            if (searchInput && searchInput.value) {
-                searchInput.value = '';
-                searchInput.form.submit();
-            }
-        }
-    });
-    
-    // Show keyboard shortcuts hint after 30 seconds
-    setTimeout(() => {
-        if (!localStorage.getItem('shortcuts_shown')) {
-            showToast('💡 Tip: Press Ctrl+H for help, Ctrl+N to add equipment, or Esc to clear search', 'info');
-            localStorage.setItem('shortcuts_shown', 'true');
-        }
-    }, 30000);
-}
+// Keyboard shortcuts disabled for cleaner interface
 
 // Export functions for global use
 window.ChurchInventory = {
@@ -731,7 +453,5 @@ window.ChurchInventory = {
     copyToClipboard,
     formatDate,
     showLoading,
-    hideLoading,
-    initializeNoviceFeatures,
-    initializeTutorialFeatures
+    hideLoading
 };

@@ -142,9 +142,7 @@
     transition: all 0.2s ease-in-out;
 }
 
-.btn:hover {
-    transform: translateY(-1px);
-}
+/* Button hover transform removed for cleaner interface */
 
 /* Navigation improvements */
 .navbar-brand {
@@ -190,14 +188,7 @@ footer {
     transition: left 0.5s;
 }
 
-.stat-card:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-
-.stat-card:hover::before {
-    left: 100%;
-}
+/* Stat card hover effects removed for cleaner interface */
 
 /* Equipment detail page improvements */
 .equipment-detail .badge {
@@ -390,31 +381,11 @@ footer {
     transition: width 0.5s ease;
 }
 
-/* Tooltip improvements */
-.tooltip {
-    font-size: 0.875rem;
-}
+/* Tooltip styles removed for cleaner interface */
 
-.tooltip-inner {
-    background-color: var(--bs-dark);
-    border-radius: 6px;
-    padding: 8px 12px;
-}
+/* Icon animations removed for cleaner interface */
 
-/* Icon animations */
-[data-feather] {
-    transition: transform 0.2s ease;
-}
-
-.btn:hover [data-feather] {
-    transform: scale(1.1);
-}
-
-/* Search input enhancement */
-.input-group:focus-within {
-    transform: scale(1.02);
-    transition: transform 0.2s ease;
-}
+/* Search input scaling removed for cleaner interface */
 
 /* Dark theme adjustments */
 @media (prefers-color-scheme: dark) {
@@ -433,16 +404,7 @@ footer {
     }
 }
 
-/* Quick pulse animation for important elements */
-.pulse {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
+/* Pulse animation removed for cleaner interface */
 
 /* Loading states for better UX */
 .btn.loading {
