@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Church Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i data-feather="log-in" class="me-2"></i>
+                        Sign In
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required autofocus>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="log-in" class="me-2"></i>
+                                Sign In
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-2">Don't have an account?</p>
+                        <a href="{{ url_for('auth.register_page') }}" class="btn btn-outline-secondary">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Create Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Store JWT token
+            localStorage.setItem('auth_token', result.token);
+            localStorage.setItem('user_data', JSON.stringify(result.user));
+            
+            showAlert('Login successful! Redirecting...', 'success');
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        } else {
+            if (result.verification_required) {
+                // Handle verification required
+                window.location.href = `/auth/verify?user_id=${result.user_id}&type=${result.verification_required}`;
+            } else {
+                showAlert(result.error || 'Login failed', 'danger');
+            }
+        }
+    } catch (error) {
+        showAlert('Network error. Please try again.', 'danger');
+    }
+});
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const form = document.getElementById('loginForm');
+    form.parentNode.insertBefore(alertDiv, form);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

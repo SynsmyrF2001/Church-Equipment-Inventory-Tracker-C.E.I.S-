@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Authentication Demo - Church Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i data-feather="shield" class="me-2"></i>
+                    JWT Authentication System
+                </h1>
+                <div id="authStatus" class="badge bg-secondary">Not Authenticated</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Authentication Status -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="user" class="me-2"></i>
+                        Authentication Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="notLoggedIn">
+                        <p class="text-muted">You are not currently logged in.</p>
+                        <div class="d-grid gap-2">
+                            <a href="/api/auth/register-page" class="btn btn-primary">
+                                <i data-feather="user-plus" class="me-2"></i>
+                                Create Account
+                            </a>
+                            <a href="/api/auth/login-page" class="btn btn-outline-primary">
+                                <i data-feather="log-in" class="me-2"></i>
+                                Sign In
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div id="loggedIn" class="d-none">
+                        <div class="alert alert-success">
+                            <h6><i data-feather="check-circle" class="me-2"></i>Welcome back!</h6>
+                            <p id="userInfo" class="mb-0"></p>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-info" onclick="loadProfile()">
+                                <i data-feather="user" class="me-2"></i>
+                                View Profile
+                            </button>
+                            <a href="/protected-demo" class="btn btn-success">
+                                <i data-feather="lock" class="me-2"></i>
+                                Access Protected Content
+                            </a>
+                            <button class="btn btn-outline-danger" onclick="logout()">
+                                <i data-feather="log-out" class="me-2"></i>
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="info" class="me-2"></i>
+                        System Features
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6>Security Features:</h6>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-center">
+                            <i data-feather="shield" class="me-2 text-success"></i>
+                            JWT Token Authentication
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i data-feather="mail" class="me-2 text-info"></i>
+                            Email Verification
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i data-feather="smartphone" class="me-2 text-warning"></i>
+                            SMS Two-Factor Authentication
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i data-feather="key" class="me-2 text-primary"></i>
+                            Secure Password Hashing
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i data-feather="clock" class="me-2 text-secondary"></i>
+                            Session Management
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Profile Section -->
+    <div id="profileSection" class="row mt-4 d-none">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="user" class="me-2"></i>
+                        User Profile
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="profileContent">
+                        <!-- Profile content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- API Testing Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="terminal" class="me-2"></i>
+                        API Testing
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Public Endpoints:</h6>
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-outline-secondary" onclick="testEndpoint('/api/auth/register', 'POST')">
+                                    POST /api/auth/register
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="testEndpoint('/api/auth/login', 'POST')">
+                                    POST /api/auth/login
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="testEndpoint('/api/auth/verify', 'POST')">
+                                    POST /api/auth/verify
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Protected Endpoints:</h6>
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-outline-primary" onclick="testProtectedEndpoint('/api/auth/profile', 'GET')">
+                                    GET /api/auth/profile
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="testProtectedEndpoint('/api/auth/profile', 'PUT')">
+                                    PUT /api/auth/profile
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="testProtectedEndpoint('/api/auth/logout', 'POST')">
+                                    POST /api/auth/logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6>Response:</h6>
+                    <pre id="apiResponse" class="bg-light p-3 rounded">
+                        Click an endpoint to test...
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let authToken = localStorage.getItem('auth_token');
+let userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+
+// Check authentication status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuthStatus();
+});
+
+function checkAuthStatus() {
+    if (authToken && userData.email) {
+        showLoggedIn();
+    } else {
+        showNotLoggedIn();
+    }
+}
+
+function showLoggedIn() {
+    document.getElementById('authStatus').textContent = 'Authenticated';
+    document.getElementById('authStatus').className = 'badge bg-success';
+    document.getElementById('notLoggedIn').classList.add('d-none');
+    document.getElementById('loggedIn').classList.remove('d-none');
+    
+    // Show user info
+    const userInfo = document.getElementById('userInfo');
+    userInfo.innerHTML = `
+        <strong>${userData.full_name || userData.first_name + ' ' + userData.last_name}</strong><br>
+        <small class="text-muted">${userData.email}</small>
+    `;
+}
+
+function showNotLoggedIn() {
+    document.getElementById('authStatus').textContent = 'Not Authenticated';
+    document.getElementById('authStatus').className = 'badge bg-secondary';
+    document.getElementById('notLoggedIn').classList.remove('d-none');
+    document.getElementById('loggedIn').classList.add('d-none');
+    document.getElementById('profileSection').classList.add('d-none');
+}
+
+async function loadProfile() {
+    if (!authToken) {
+        alert('Please log in first');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/auth/profile', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            displayProfile(result.user);
+        } else {
+            document.getElementById('apiResponse').textContent = JSON.stringify(result, null, 2);
+        }
+    } catch (error) {
+        document.getElementById('apiResponse').textContent = 'Error: ' + error.message;
+    }
+}
+
+function displayProfile(user) {
+    const profileContent = document.getElementById('profileContent');
+    profileContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr><td><strong>Name:</strong></td><td>${user.full_name}</td></tr>
+                    <tr><td><strong>Email:</strong></td><td>${user.email}</td></tr>
+                    <tr><td><strong>Phone:</strong></td><td>${user.phone_number || 'Not provided'}</td></tr>
+                    <tr><td><strong>Email Verified:</strong></td><td>${user.email_verified ? '✅ Yes' : '❌ No'}</td></tr>
+                    <tr><td><strong>Phone Verified:</strong></td><td>${user.phone_verified ? '✅ Yes' : '❌ No'}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr><td><strong>Admin:</strong></td><td>${user.is_admin ? 'Yes' : 'No'}</td></tr>
+                    <tr><td><strong>Active:</strong></td><td>${user.is_active ? 'Yes' : 'No'}</td></tr>
+                    <tr><td><strong>Created:</strong></td><td>${new Date(user.created_at).toLocaleDateString()}</td></tr>
+                    <tr><td><strong>Last Login:</strong></td><td>${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}</td></tr>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('profileSection').classList.remove('d-none');
+}
+
+async function logout() {
+    if (authToken) {
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+        } catch (error) {
+            console.log('Logout request failed:', error);
+        }
+    }
+    
+    // Clear local storage
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
+    authToken = null;
+    userData = {};
+    
+    checkAuthStatus();
+    alert('Logged out successfully');
+}
+
+async function testEndpoint(endpoint, method) {
+    document.getElementById('apiResponse').textContent = 'Testing...';
+    
+    try {
+        const response = await fetch(endpoint, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.text();
+        document.getElementById('apiResponse').textContent = `Status: ${response.status}\n\n${result}`;
+    } catch (error) {
+        document.getElementById('apiResponse').textContent = 'Error: ' + error.message;
+    }
+}
+
+async function testProtectedEndpoint(endpoint, method) {
+    if (!authToken) {
+        document.getElementById('apiResponse').textContent = 'Error: No authentication token. Please log in first.';
+        return;
+    }
+    
+    document.getElementById('apiResponse').textContent = 'Testing...';
+    
+    try {
+        const response = await fetch(endpoint, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        const result = await response.text();
+        document.getElementById('apiResponse').textContent = `Status: ${response.status}\n\n${result}`;
+    } catch (error) {
+        document.getElementById('apiResponse').textContent = 'Error: ' + error.message;
+    }
+}
+</script>
+{% endblock %}

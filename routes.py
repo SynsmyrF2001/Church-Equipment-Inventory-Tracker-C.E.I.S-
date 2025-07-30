@@ -1,8 +1,23 @@
 from flask import render_template, redirect, url_for, flash, request, make_response, session, jsonify
 from flask_babel import gettext, ngettext, lazy_gettext, get_locale
 from app import app, db
-from models import Equipment, CheckoutHistory
+from models import Equipment, CheckoutHistory, User, VerificationCode
 from forms import EquipmentForm, CheckoutForm, CheckinForm, SearchForm
+from auth_routes import auth_bp
+
+# Register authentication blueprint
+app.register_blueprint(auth_bp)
+
+# JWT Authentication Demo Routes
+@app.route('/auth-demo')
+def auth_demo():
+    """Demo page showing authentication features"""
+    return render_template('auth_demo.html')
+
+@app.route('/protected-demo')
+def protected_demo():
+    """Demo protected page requiring authentication"""
+    return render_template('protected_demo.html')
 from datetime import datetime, date
 import csv
 from io import StringIO
