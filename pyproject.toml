@@ -1,7 +1,7 @@
 [project]
-name = "repl-nix-workspace"
-version = "0.1.0"
-description = "Add your description here"
+name = "church-inventory-tracker"
+version = "1.0.0"
+description = "A comprehensive Flask-based web application for managing church technical equipment inventory"
 requires-python = ">=3.11"
 dependencies = [
     "email-validator>=2.2.0",
