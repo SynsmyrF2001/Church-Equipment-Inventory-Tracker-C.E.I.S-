@@ -47,11 +47,20 @@
                             Reports
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('scan_page') }}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i data-feather="camera" class="me-1"></i>
-                            QR Scanner
+                            QR Features
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('scan_page') }}">
+                                <i data-feather="camera" class="me-2"></i>QR Scanner
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/checkout-form">
+                                <i data-feather="log-out" class="me-2"></i>Quick Checkout
+                            </a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth_demo') }}">

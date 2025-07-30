@@ -30,13 +30,17 @@
                     <div id="notLoggedIn">
                         <p class="text-muted">You are not currently logged in.</p>
                         <div class="d-grid gap-2">
-                            <a href="/api/auth/register-page" class="btn btn-primary">
+                            <button class="btn btn-primary" onclick="showRegistrationDemo()">
                                 <i data-feather="user-plus" class="me-2"></i>
-                                Create Account
-                            </a>
-                            <a href="/api/auth/login-page" class="btn btn-outline-primary">
+                                Demo Registration Process
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="showLoginDemo()">
                                 <i data-feather="log-in" class="me-2"></i>
-                                Sign In
+                                Demo Login Process
+                            </button>
+                            <a href="/api/auth/register-page" class="btn btn-outline-secondary">
+                                <i data-feather="external-link" class="me-2"></i>
+                                Go to Actual Registration
                             </a>
                         </div>
                     </div>
@@ -121,6 +125,25 @@
         </div>
     </div>
     
+    <!-- Live Demo Section -->
+    <div id="demoSection" class="row mt-4 d-none">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="play" class="me-2"></i>
+                        Live Authentication Demo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="demoContent">
+                        <!-- Demo content will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- API Testing Section -->
     <div class="row mt-4">
         <div class="col-12">
@@ -128,7 +151,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i data-feather="terminal" class="me-2"></i>
-                        API Testing
+                        API Testing & Documentation
                     </h5>
                 </div>
                 <div class="card-body">
@@ -288,6 +311,278 @@ async function logout() {
     
     checkAuthStatus();
     alert('Logged out successfully');
+}
+
+function showRegistrationDemo() {
+    document.getElementById('demoSection').classList.remove('d-none');
+    document.getElementById('demoContent').innerHTML = `
+        <h6>Registration Process Demonstration</h6>
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Step 1: User Registration</h6>
+                <form id="demo-register-form" class="border p-3 rounded">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name:</label>
+                        <input type="text" class="form-control" value="John Doe" id="demo-name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email:</label>
+                        <input type="email" class="form-control" value="john.doe@example.com" id="demo-email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone (optional):</label>
+                        <input type="text" class="form-control" value="+1234567890" id="demo-phone">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password:</label>
+                        <input type="password" class="form-control" value="SecurePass123!" id="demo-password">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="demoRegister()">
+                        Register Account
+                    </button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h6>Security Features:</h6>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex align-items-center">
+                        <i data-feather="shield" class="me-2 text-success"></i>
+                        Password hashing with bcrypt
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i data-feather="mail" class="me-2 text-info"></i>
+                        Email verification required
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i data-feather="smartphone" class="me-2 text-warning"></i>
+                        Optional SMS verification
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i data-feather="key" class="me-2 text-primary"></i>
+                        JWT token generation
+                    </li>
+                </ul>
+                
+                <div class="mt-3">
+                    <h6>Registration Flow:</h6>
+                    <ol class="small">
+                        <li>Validate input data</li>
+                        <li>Hash password securely</li>
+                        <li>Create user record</li>
+                        <li>Send email verification</li>
+                        <li>Send SMS if phone provided</li>
+                        <li>Return secure response</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div id="demo-output" class="mt-3"></div>
+    `;
+    feather.replace();
+    document.getElementById('demoSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showLoginDemo() {
+    document.getElementById('demoSection').classList.remove('d-none');
+    document.getElementById('demoContent').innerHTML = `
+        <h6>Login Process Demonstration</h6>
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Step 1: User Login</h6>
+                <form id="demo-login-form" class="border p-3 rounded">
+                    <div class="mb-3">
+                        <label class="form-label">Email:</label>
+                        <input type="email" class="form-control" value="john.doe@example.com" id="demo-login-email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password:</label>
+                        <input type="password" class="form-control" value="SecurePass123!" id="demo-login-password">
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="demoLogin()">
+                        Sign In
+                    </button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h6>Authentication Process:</h6>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex align-items-center">
+                        <i data-feather="check" class="me-2 text-success"></i>
+                        Validate credentials
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i data-feather="shield" class="me-2 text-info"></i>
+                        Verify password hash
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i data-feather="user-check" class="me-2 text-warning"></i>
+                        Check verification status
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i data-feather="key" class="me-2 text-primary"></i>
+                        Generate JWT token
+                    </li>
+                </ul>
+                
+                <div class="mt-3">
+                    <h6>JWT Token Contains:</h6>
+                    <ul class="small">
+                        <li>User ID (sub)</li>
+                        <li>Email address</li>
+                        <li>Full name</li>
+                        <li>Admin status</li>
+                        <li>Expiration time</li>
+                        <li>Issue time</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="demo-output" class="mt-3"></div>
+    `;
+    feather.replace();
+    document.getElementById('demoSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function demoRegister() {
+    const name = document.getElementById('demo-name').value;
+    const email = document.getElementById('demo-email').value;
+    const phone = document.getElementById('demo-phone').value;
+    const password = document.getElementById('demo-password').value;
+    
+    showDemoProgress('Registering user...');
+    
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                full_name: name,
+                email: email,
+                phone_number: phone,
+                password: password
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showDemoResult('Registration Successful!', result, 'success');
+        } else {
+            showDemoResult('Registration Failed', result, 'danger');
+        }
+    } catch (error) {
+        showDemoResult('Network Error', { error: error.message }, 'danger');
+    }
+}
+
+async function demoLogin() {
+    const email = document.getElementById('demo-login-email').value;
+    const password = document.getElementById('demo-login-password').value;
+    
+    showDemoProgress('Authenticating user...');
+    
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showDemoResult('Login Successful!', result, 'success');
+            
+            // Store token for demo purposes
+            if (result.token) {
+                localStorage.setItem('auth_token', result.token);
+                localStorage.setItem('user_data', JSON.stringify(result.user));
+                
+                // Update main auth status
+                setTimeout(() => {
+                    checkAuthStatus();
+                }, 1000);
+            }
+        } else {
+            showDemoResult('Login Failed', result, 'danger');
+        }
+    } catch (error) {
+        showDemoResult('Network Error', { error: error.message }, 'danger');
+    }
+}
+
+function showDemoProgress(message) {
+    document.getElementById('demo-output').innerHTML = `
+        <div class="alert alert-info">
+            <i data-feather="loader" class="me-2"></i>
+            ${message}
+        </div>
+    `;
+    feather.replace();
+}
+
+function showDemoResult(title, data, type) {
+    let content = `
+        <div class="alert alert-${type}">
+            <h6>${title}</h6>
+            <pre class="mb-0 small">${JSON.stringify(data, null, 2)}</pre>
+        </div>
+    `;
+    
+    if (type === 'success' && data.token) {
+        content += `
+            <div class="alert alert-info">
+                <h6>JWT Token Analysis:</h6>
+                <div id="token-analysis"></div>
+            </div>
+        `;
+    }
+    
+    document.getElementById('demo-output').innerHTML = content;
+    
+    if (type === 'success' && data.token) {
+        analyzeJWTToken(data.token);
+    }
+    
+    feather.replace();
+}
+
+function analyzeJWTToken(token) {
+    try {
+        const parts = token.split('.');
+        const header = JSON.parse(atob(parts[0]));
+        const payload = JSON.parse(atob(parts[1]));
+        
+        document.getElementById('token-analysis').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Header:</h6>
+                    <pre class="small">${JSON.stringify(header, null, 2)}</pre>
+                </div>
+                <div class="col-md-6">
+                    <h6>Payload:</h6>
+                    <pre class="small">${JSON.stringify(payload, null, 2)}</pre>
+                </div>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted">
+                    <strong>Security Note:</strong> The signature is verified server-side using a secret key.
+                    This prevents token tampering and ensures authenticity.
+                </small>
+            </div>
+        `;
+    } catch (error) {
+        document.getElementById('token-analysis').innerHTML = `
+            <p class="text-warning">Unable to decode token: ${error.message}</p>
+        `;
+    }
 }
 
 async function testEndpoint(endpoint, method) {

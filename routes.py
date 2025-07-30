@@ -20,6 +20,11 @@ def protected_demo():
     """Demo protected page requiring authentication"""
     return render_template('protected_demo.html')
 
+@app.route('/checkout-form')
+def checkout_form_page():
+    """Quick checkout form page"""
+    return render_template('checkout_form.html')
+
 # QR Code Routes
 @app.route('/equipment/<int:equipment_id>/qr')
 def equipment_qr_code(equipment_id):
@@ -210,6 +215,30 @@ def api_quick_checkin():
         db.session.rollback()
         logger.error(f"Quick checkin error: {str(e)}")
         return jsonify({'error': 'Failed to checkin equipment'}), 500
+
+@app.route('/api/equipment/list')
+def api_equipment_list():
+    """API endpoint to get list of all equipment for forms"""
+    try:
+        equipment = Equipment.query.all()
+        equipment_list = []
+        
+        for eq in equipment:
+            equipment_list.append({
+                'id': eq.id,
+                'name': eq.name,
+                'category': eq.category,
+                'status': eq.status,
+                'location': eq.location,
+                'model': eq.model,
+                'description': eq.description
+            })
+        
+        return jsonify(equipment_list)
+        
+    except Exception as e:
+        logger.error(f"Equipment list error: {str(e)}")
+        return jsonify({'error': 'Failed to load equipment list'}), 500
 from datetime import datetime, date
 import csv
 import logging
