@@ -4,6 +4,7 @@ from app import app, db
 from models import Equipment, CheckoutHistory, User, VerificationCode
 from forms import EquipmentForm, CheckoutForm, CheckinForm, SearchForm
 from auth_routes import auth_bp
+from qr_utils import qr_generator, qr_scanner
 
 # Register authentication blueprint
 app.register_blueprint(auth_bp)
@@ -18,8 +19,202 @@ def auth_demo():
 def protected_demo():
     """Demo protected page requiring authentication"""
     return render_template('protected_demo.html')
+
+# QR Code Routes
+@app.route('/equipment/<int:equipment_id>/qr')
+def equipment_qr_code(equipment_id):
+    """Generate and display QR code for equipment"""
+    equipment = Equipment.query.get_or_404(equipment_id)
+    
+    # Generate QR code
+    qr_base64 = qr_generator.generate_equipment_qr_base64(
+        equipment.id, 
+        equipment.name, 
+        equipment.category
+    )
+    
+    return render_template('equipment_qr.html', 
+                         equipment=equipment, 
+                         qr_code=qr_base64)
+
+@app.route('/scan')
+def scan_page():
+    """QR code scanning page"""
+    return render_template('scan_qr.html')
+
+@app.route('/scan/<int:equipment_id>')
+def scan_equipment(equipment_id):
+    """Direct scan result for specific equipment"""
+    equipment = Equipment.query.get_or_404(equipment_id)
+    return render_template('scan_result.html', equipment=equipment)
+
+@app.route('/api/scan', methods=['POST'])
+def api_scan_qr():
+    """API endpoint to process scanned QR code data"""
+    try:
+        data = request.get_json()
+        qr_data = data.get('qr_data', '').strip()
+        
+        if not qr_data:
+            return jsonify({'error': 'No QR data provided'}), 400
+        
+        # Parse QR code data
+        parsed = qr_scanner.parse_qr_data(qr_data)
+        
+        if not parsed['success']:
+            return jsonify({'error': parsed['error'], 'raw_data': parsed.get('raw_data')}), 400
+        
+        equipment_id = parsed['equipment_id']
+        equipment = Equipment.query.get(equipment_id)
+        
+        if not equipment:
+            return jsonify({'error': f'Equipment with ID {equipment_id} not found'}), 404
+        
+        # Return equipment information
+        return jsonify({
+            'success': True,
+            'equipment': {
+                'id': equipment.id,
+                'name': equipment.name,
+                'category': equipment.category,
+                'status': equipment.status,
+                'location': equipment.location,
+                'model': equipment.model,
+                'description': equipment.description
+            },
+            'scan_info': parsed
+        })
+        
+    except Exception as e:
+        logger.error(f"QR scan error: {str(e)}")
+        return jsonify({'error': 'Failed to process QR code'}), 500
+
+@app.route('/api/quick-checkout', methods=['POST'])
+def api_quick_checkout():
+    """Quick checkout via QR code scan"""
+    try:
+        data = request.get_json()
+        equipment_id = data.get('equipment_id')
+        checked_out_by = data.get('checked_out_by', '').strip()
+        expected_return = data.get('expected_return_date')
+        notes = data.get('notes', '').strip()
+        
+        if not equipment_id or not checked_out_by:
+            return jsonify({'error': 'Equipment ID and checkout person are required'}), 400
+        
+        equipment = Equipment.query.get(equipment_id)
+        if not equipment:
+            return jsonify({'error': 'Equipment not found'}), 404
+        
+        if equipment.status != 'available':
+            return jsonify({'error': f'Equipment is currently {equipment.status}'}), 400
+        
+        # Parse expected return date
+        expected_return_date = None
+        if expected_return:
+            try:
+                expected_return_date = datetime.strptime(expected_return, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'error': 'Invalid return date format. Use YYYY-MM-DD'}), 400
+        
+        # Create checkout record
+        checkout = CheckoutHistory(
+            equipment_id=equipment.id,
+            checked_out_by=checked_out_by,
+            expected_return_date=expected_return_date,
+            notes=notes,
+            condition_out='good'  # Default condition
+        )
+        
+        # Update equipment status
+        equipment.status = 'in-use'
+        
+        db.session.add(checkout)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Equipment "{equipment.name}" checked out successfully',
+            'checkout': {
+                'id': checkout.id,
+                'equipment_name': equipment.name,
+                'checked_out_by': checkout.checked_out_by,
+                'checked_out_at': checkout.checked_out_at.isoformat(),
+                'expected_return_date': checkout.expected_return_date.isoformat() if checkout.expected_return_date else None
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Quick checkout error: {str(e)}")
+        return jsonify({'error': 'Failed to checkout equipment'}), 500
+
+@app.route('/api/quick-checkin', methods=['POST'])
+def api_quick_checkin():
+    """Quick checkin via QR code scan"""
+    try:
+        data = request.get_json()
+        equipment_id = data.get('equipment_id')
+        checked_in_by = data.get('checked_in_by', '').strip()
+        condition = data.get('condition', 'good')
+        notes = data.get('notes', '').strip()
+        
+        if not equipment_id or not checked_in_by:
+            return jsonify({'error': 'Equipment ID and checkin person are required'}), 400
+        
+        equipment = Equipment.query.get(equipment_id)
+        if not equipment:
+            return jsonify({'error': 'Equipment not found'}), 404
+        
+        if equipment.status != 'in-use':
+            return jsonify({'error': f'Equipment is not currently checked out (status: {equipment.status})'}), 400
+        
+        # Find active checkout
+        active_checkout = CheckoutHistory.query.filter_by(
+            equipment_id=equipment.id,
+            checked_in_at=None
+        ).first()
+        
+        if not active_checkout:
+            return jsonify({'error': 'No active checkout found for this equipment'}), 400
+        
+        # Update checkout record
+        active_checkout.checked_in_at = datetime.utcnow()
+        active_checkout.checked_in_by = checked_in_by
+        active_checkout.condition_in = condition
+        if notes:
+            active_checkout.notes = (active_checkout.notes or '') + f'\nCheck-in notes: {notes}'
+        
+        # Update equipment status based on condition
+        if condition == 'poor':
+            equipment.status = 'maintenance'
+        else:
+            equipment.status = 'available'
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Equipment "{equipment.name}" checked in successfully',
+            'checkin': {
+                'id': active_checkout.id,
+                'equipment_name': equipment.name,
+                'checked_in_by': active_checkout.checked_in_by,
+                'checked_in_at': active_checkout.checked_in_at.isoformat(),
+                'condition': condition,
+                'duration_days': active_checkout.duration_days
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Quick checkin error: {str(e)}")
+        return jsonify({'error': 'Failed to checkin equipment'}), 500
 from datetime import datetime, date
 import csv
+import logging
+
+logger = logging.getLogger(__name__)
 from io import StringIO
 
 

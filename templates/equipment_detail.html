@@ -232,6 +232,11 @@
                         Edit Equipment
                     </a>
                     
+                    <a href="{{ url_for('equipment_qr_code', equipment_id=equipment.id) }}" class="btn btn-outline-secondary">
+                        <i data-feather="aperture" class="me-2"></i>
+                        Generate QR Code
+                    </a>
+                    
                     <form method="POST" action="{{ url_for('delete_equipment', id=equipment.id) }}" 
                           onsubmit="return confirm('Are you sure you want to delete this equipment? This action cannot be undone.');">
                         <button type="submit" class="btn btn-outline-danger w-100" 

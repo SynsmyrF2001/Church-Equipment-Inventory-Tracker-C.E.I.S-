@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Result - {{ equipment.name }} - Church Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i data-feather="check-circle" class="me-2"></i>
+                    Equipment Scanned Successfully
+                </h1>
+                <div>
+                    <a href="{{ url_for('scan_page') }}" class="btn btn-outline-secondary me-2">
+                        <i data-feather="camera" class="me-2"></i>
+                        Scan Another
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        <i data-feather="home" class="me-2"></i>
+                        Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i data-feather="package" class="me-2"></i>
+                        {{ equipment.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Equipment ID:</strong></td>
+                                    <td>{{ equipment.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Category:</strong></td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ equipment.category.title() }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        {% if equipment.status == 'available' %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% elif equipment.status == 'in-use' %}
+                                            <span class="badge bg-warning">In Use</span>
+                                        {% elif equipment.status == 'maintenance' %}
+                                            <span class="badge bg-danger">Maintenance</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Location:</strong></td>
+                                    <td>{{ equipment.location or 'Not specified' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Model:</strong></td>
+                                    <td>{{ equipment.model or 'Not specified' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Serial Number:</strong></td>
+                                    <td>{{ equipment.serial_number or 'Not specified' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Purchase Date:</strong></td>
+                                    <td>{{ equipment.purchase_date.strftime('%Y-%m-%d') if equipment.purchase_date else 'Not specified' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Purchase Price:</strong></td>
+                                    <td>{{ '${:,.2f}'.format(equipment.purchase_price) if equipment.purchase_price else 'Not specified' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if equipment.description %}
+                        <div class="mt-3">
+                            <h6>Description:</h6>
+                            <p class="text-muted">{{ equipment.description }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Current Status Information -->
+                    {% if equipment.current_checkout %}
+                        <div class="alert alert-warning mt-3">
+                            <h6><i data-feather="clock" class="me-2"></i>Currently Checked Out</h6>
+                            <table class="table table-sm table-borderless mb-0">
+                                <tr>
+                                    <td><strong>Checked out by:</strong></td>
+                                    <td>{{ equipment.current_checkout.checked_out_by }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Checked out on:</strong></td>
+                                    <td>{{ equipment.current_checkout.checked_out_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% if equipment.current_checkout.expected_return_date %}
+                                    <tr>
+                                        <td><strong>Expected return:</strong></td>
+                                        <td>
+                                            {{ equipment.current_checkout.expected_return_date.strftime('%Y-%m-%d') }}
+                                            {% if equipment.current_checkout.is_overdue %}
+                                                <span class="badge bg-danger ms-2">Overdue</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                {% if equipment.current_checkout.notes %}
+                                    <tr>
+                                        <td><strong>Notes:</strong></td>
+                                        <td>{{ equipment.current_checkout.notes }}</td>
+                                    </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="zap" class="me-2"></i>
+                        Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if equipment.status == 'available' %}
+                            <button class="btn btn-success" onclick="quickCheckout()">
+                                <i data-feather="log-out" class="me-2"></i>
+                                Quick Checkout
+                            </button>
+                        {% elif equipment.status == 'in-use' %}
+                            <button class="btn btn-info" onclick="quickCheckin()">
+                                <i data-feather="log-in" class="me-2"></i>
+                                Quick Check-in
+                            </button>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('equipment_detail', id=equipment.id) }}" class="btn btn-outline-primary">
+                            <i data-feather="eye" class="me-2"></i>
+                            View Full Details
+                        </a>
+                        
+                        <a href="{{ url_for('equipment_qr_code', equipment_id=equipment.id) }}" class="btn btn-outline-secondary">
+                            <i data-feather="aperture" class="me-2"></i>
+                            View QR Code
+                        </a>
+                        
+                        {% if equipment.status == 'available' %}
+                            <a href="{{ url_for('checkout_equipment', id=equipment.id) }}" class="btn btn-outline-success">
+                                <i data-feather="edit" class="me-2"></i>
+                                Full Checkout Form
+                            </a>
+                        {% elif equipment.status == 'in-use' %}
+                            <a href="{{ url_for('checkin_equipment', id=equipment.id) }}" class="btn btn-outline-info">
+                                <i data-feather="edit" class="me-2"></i>
+                                Full Check-in Form
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="activity" class="me-2"></i>
+                        Recent Activity
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if equipment.checkout_history %}
+                        <div class="timeline">
+                            {% for checkout in equipment.checkout_history[:3] %}
+                                <div class="timeline-item mb-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ checkout.checked_out_by }}</strong>
+                                            <small class="text-muted d-block">
+                                                {{ checkout.checked_out_at.strftime('%m/%d/%Y %H:%M') }}
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            {% if checkout.checked_in_at %}
+                                                <span class="badge bg-success">Returned</span>
+                                                <small class="text-muted d-block">
+                                                    {{ checkout.duration_days }} day(s)
+                                                </small>
+                                            {% else %}
+                                                <span class="badge bg-warning">In Use</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if not loop.last %}
+                                    <hr class="my-2">
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if equipment.checkout_history|length > 3 %}
+                            <div class="text-center mt-2">
+                                <a href="{{ url_for('equipment_detail', id=equipment.id) }}" class="btn btn-outline-secondary btn-sm">
+                                    View All History
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted mb-0">No checkout history available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Checkout Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i data-feather="log-out" class="me-2"></i>
+                    Quick Checkout - {{ equipment.name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quick-checkout-form">
+                    <div class="mb-3">
+                        <label for="checkout-person" class="form-label">Checked out by:</label>
+                        <input type="text" id="checkout-person" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="checkout-return-date" class="form-label">Expected return date:</label>
+                        <input type="date" id="checkout-return-date" class="form-control">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="checkout-notes" class="form-label">Notes (optional):</label>
+                        <textarea id="checkout-notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="submitQuickCheckout()">
+                    <i data-feather="check" class="me-2"></i>
+                    Checkout Equipment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Check-in Modal -->
+<div class="modal fade" id="checkinModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i data-feather="log-in" class="me-2"></i>
+                    Quick Check-in - {{ equipment.name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quick-checkin-form">
+                    <div class="mb-3">
+                        <label for="checkin-person" class="form-label">Checked in by:</label>
+                        <input type="text" id="checkin-person" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="checkin-condition" class="form-label">Equipment condition:</label>
+                        <select id="checkin-condition" class="form-select">
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor (Needs Maintenance)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="checkin-notes" class="form-label">Notes (optional):</label>
+                        <textarea id="checkin-notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" onclick="submitQuickCheckin()">
+                    <i data-feather="check" class="me-2"></i>
+                    Check-in Equipment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function quickCheckout() {
+    const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+    modal.show();
+}
+
+function quickCheckin() {
+    const modal = new bootstrap.Modal(document.getElementById('checkinModal'));
+    modal.show();
+}
+
+async function submitQuickCheckout() {
+    const checkedOutBy = document.getElementById('checkout-person').value.trim();
+    const returnDate = document.getElementById('checkout-return-date').value;
+    const notes = document.getElementById('checkout-notes').value.trim();
+    
+    if (!checkedOutBy) {
+        showAlert('Please enter who is checking out the equipment', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/quick-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                equipment_id: {{ equipment.id }},
+                checked_out_by: checkedOutBy,
+                expected_return_date: returnDate,
+                notes: notes
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+            
+            // Reload page to show updated status
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert(result.error || 'Checkout failed', 'danger');
+        }
+    } catch (error) {
+        showAlert('Network error during checkout', 'danger');
+    }
+}
+
+async function submitQuickCheckin() {
+    const checkedInBy = document.getElementById('checkin-person').value.trim();
+    const condition = document.getElementById('checkin-condition').value;
+    const notes = document.getElementById('checkin-notes').value.trim();
+    
+    if (!checkedInBy) {
+        showAlert('Please enter who is checking in the equipment', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/quick-checkin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                equipment_id: {{ equipment.id }},
+                checked_in_by: checkedInBy,
+                condition: condition,
+                notes: notes
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('checkinModal')).hide();
+            
+            // Reload page to show updated status
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert(result.error || 'Check-in failed', 'danger');
+        }
+    } catch (error) {
+        showAlert('Network error during check-in', 'danger');
+    }
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 400px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 4000);
+}
+</script>
+{% endblock %}

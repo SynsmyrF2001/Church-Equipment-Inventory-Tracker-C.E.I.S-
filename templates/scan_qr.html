@@ -1,0 +1,601 @@
+{% extends "base.html" %}
+
+{% block title %}QR Code Scanner - Church Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i data-feather="camera" class="me-2"></i>
+                    QR Code Scanner
+                </h1>
+                <div>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scanner Interface -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="camera" class="me-2"></i>
+                        Camera Scanner
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="scanner-container" class="text-center">
+                        <div id="video-container" class="mb-3 d-none">
+                            <video id="qr-video" class="img-fluid border rounded" autoplay muted playsinline></video>
+                            <canvas id="qr-canvas" class="d-none"></canvas>
+                        </div>
+                        
+                        <div id="start-container">
+                            <div class="alert alert-info">
+                                <h6><i data-feather="info" class="me-2"></i>Camera QR Scanner</h6>
+                                <p>Use your device's camera to scan equipment QR codes for quick checkout and checkin.</p>
+                            </div>
+                            <button id="start-camera" class="btn btn-primary btn-lg">
+                                <i data-feather="camera" class="me-2"></i>
+                                Start Camera Scanner
+                            </button>
+                        </div>
+                        
+                        <div id="scanning-status" class="alert alert-info d-none">
+                            <i data-feather="search" class="me-2"></i>
+                            Point your camera at a QR code...
+                        </div>
+                        
+                        <div id="camera-controls" class="d-none">
+                            <button id="stop-camera" class="btn btn-outline-danger me-2">
+                                <i data-feather="camera-off" class="me-2"></i>
+                                Stop Camera
+                            </button>
+                            <button id="switch-camera" class="btn btn-outline-secondary">
+                                <i data-feather="rotate-cw" class="me-2"></i>
+                                Switch Camera
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Manual Input -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="edit-3" class="me-2"></i>
+                        Manual QR Code Input
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form id="manual-scan-form">
+                        <div class="input-group">
+                            <input type="text" id="manual-qr-input" class="form-control" 
+                                   placeholder="Paste QR code data or enter equipment ID">
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="search" class="me-2"></i>
+                                Process
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Scan Results -->
+            <div id="scan-result-card" class="card d-none">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i data-feather="check-circle" class="me-2"></i>
+                        Equipment Scanned
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="equipment-info">
+                        <!-- Equipment info will be populated here -->
+                    </div>
+                    
+                    <div id="action-buttons" class="mt-3">
+                        <!-- Action buttons will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="zap" class="me-2"></i>
+                        Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-success" onclick="showCheckoutModal()">
+                            <i data-feather="log-out" class="me-2"></i>
+                            Quick Checkout
+                        </button>
+                        <button class="btn btn-outline-info" onclick="showCheckinModal()">
+                            <i data-feather="log-in" class="me-2"></i>
+                            Quick Check-in
+                        </button>
+                        <a href="{{ url_for('add_equipment') }}" class="btn btn-outline-primary">
+                            <i data-feather="plus" class="me-2"></i>
+                            Add New Equipment
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scanner Tips -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="help-circle" class="me-2"></i>
+                        Scanner Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <ul class="mb-0">
+                            <li>Hold device steady when scanning</li>
+                            <li>Ensure good lighting on QR code</li>
+                            <li>QR code should fill about 1/3 of camera view</li>
+                            <li>Try different angles if scan fails</li>
+                            <li>Use manual input for damaged codes</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Checkout Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i data-feather="log-out" class="me-2"></i>
+                    Quick Checkout
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quick-checkout-form">
+                    <input type="hidden" id="checkout-equipment-id">
+                    
+                    <div class="mb-3">
+                        <label for="checkout-person" class="form-label">Checked out by:</label>
+                        <input type="text" id="checkout-person" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="checkout-return-date" class="form-label">Expected return date:</label>
+                        <input type="date" id="checkout-return-date" class="form-control">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="checkout-notes" class="form-label">Notes (optional):</label>
+                        <textarea id="checkout-notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="submitQuickCheckout()">
+                    <i data-feather="check" class="me-2"></i>
+                    Checkout Equipment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Check-in Modal -->
+<div class="modal fade" id="checkinModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i data-feather="log-in" class="me-2"></i>
+                    Quick Check-in
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quick-checkin-form">
+                    <input type="hidden" id="checkin-equipment-id">
+                    
+                    <div class="mb-3">
+                        <label for="checkin-person" class="form-label">Checked in by:</label>
+                        <input type="text" id="checkin-person" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="checkin-condition" class="form-label">Equipment condition:</label>
+                        <select id="checkin-condition" class="form-select">
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor (Needs Maintenance)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="checkin-notes" class="form-label">Notes (optional):</label>
+                        <textarea id="checkin-notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" onclick="submitQuickCheckin()">
+                    <i data-feather="check" class="me-2"></i>
+                    Check-in Equipment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+let video = null;
+let canvas = null;
+let context = null;
+let scanning = false;
+let currentEquipment = null;
+let facingMode = 'environment'; // Start with back camera
+
+// Initialize scanner when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    video = document.getElementById('qr-video');
+    canvas = document.getElementById('qr-canvas');
+    context = canvas.getContext('2d');
+    
+    // Set up event listeners
+    document.getElementById('start-camera').addEventListener('click', startCamera);
+    document.getElementById('stop-camera').addEventListener('click', stopCamera);
+    document.getElementById('switch-camera').addEventListener('click', switchCamera);
+    document.getElementById('manual-scan-form').addEventListener('submit', handleManualScan);
+    
+    // Check if we can use camera
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showAlert('Camera not supported on this device', 'warning');
+        document.getElementById('start-camera').disabled = true;
+    }
+});
+
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: facingMode,
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            }
+        });
+        
+        video.srcObject = stream;
+        video.play();
+        
+        // Show video and controls
+        document.getElementById('start-container').classList.add('d-none');
+        document.getElementById('video-container').classList.remove('d-none');
+        document.getElementById('camera-controls').classList.remove('d-none');
+        document.getElementById('scanning-status').classList.remove('d-none');
+        
+        scanning = true;
+        requestAnimationFrame(scanQRCode);
+        
+    } catch (error) {
+        console.error('Camera error:', error);
+        showAlert('Unable to access camera. Please check permissions.', 'danger');
+    }
+}
+
+function stopCamera() {
+    scanning = false;
+    
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
+    
+    // Show start button
+    document.getElementById('start-container').classList.remove('d-none');
+    document.getElementById('video-container').classList.add('d-none');
+    document.getElementById('camera-controls').classList.add('d-none');
+    document.getElementById('scanning-status').classList.add('d-none');
+}
+
+async function switchCamera() {
+    facingMode = facingMode === 'environment' ? 'user' : 'environment';
+    stopCamera();
+    setTimeout(startCamera, 100);
+}
+
+function scanQRCode() {
+    if (!scanning || !video.videoWidth || !video.videoHeight) {
+        if (scanning) {
+            requestAnimationFrame(scanQRCode);
+        }
+        return;
+    }
+    
+    // Set canvas size to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw video frame to canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Get image data and scan for QR code
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    
+    if (code) {
+        // QR code found!
+        handleQRCodeDetected(code.data);
+        return;
+    }
+    
+    // Continue scanning
+    if (scanning) {
+        requestAnimationFrame(scanQRCode);
+    }
+}
+
+function handleQRCodeDetected(qrData) {
+    scanning = false;
+    document.getElementById('scanning-status').innerHTML = '<i data-feather="check" class="me-2"></i>QR Code detected! Processing...';
+    feather.replace();
+    
+    // Process the QR code
+    processQRCode(qrData);
+}
+
+function handleManualScan(event) {
+    event.preventDefault();
+    const qrData = document.getElementById('manual-qr-input').value.trim();
+    if (qrData) {
+        processQRCode(qrData);
+    }
+}
+
+async function processQRCode(qrData) {
+    try {
+        const response = await fetch('/api/scan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ qr_data: qrData })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            currentEquipment = result.equipment;
+            displayEquipmentInfo(result.equipment);
+            showAlert('Equipment scanned successfully!', 'success');
+        } else {
+            showAlert(result.error || 'Failed to process QR code', 'danger');
+        }
+    } catch (error) {
+        showAlert('Network error while processing QR code', 'danger');
+    }
+}
+
+function displayEquipmentInfo(equipment) {
+    const statusBadge = getStatusBadge(equipment.status);
+    const categoryBadge = `<span class="badge bg-secondary">${equipment.category.charAt(0).toUpperCase() + equipment.category.slice(1)}</span>`;
+    
+    document.getElementById('equipment-info').innerHTML = `
+        <h6>${equipment.name}</h6>
+        <p class="mb-2">
+            ${categoryBadge} ${statusBadge}
+        </p>
+        <table class="table table-sm table-borderless">
+            <tr><td><strong>ID:</strong></td><td>${equipment.id}</td></tr>
+            <tr><td><strong>Location:</strong></td><td>${equipment.location || 'Not specified'}</td></tr>
+            <tr><td><strong>Model:</strong></td><td>${equipment.model || 'Not specified'}</td></tr>
+        </table>
+    `;
+    
+    // Show appropriate action buttons
+    let actionButtons = '';
+    if (equipment.status === 'available') {
+        actionButtons = `
+            <button class="btn btn-success btn-sm w-100 mb-2" onclick="quickCheckout(${equipment.id})">
+                <i data-feather="log-out" class="me-2"></i>
+                Quick Checkout
+            </button>
+        `;
+    } else if (equipment.status === 'in-use') {
+        actionButtons = `
+            <button class="btn btn-info btn-sm w-100 mb-2" onclick="quickCheckin(${equipment.id})">
+                <i data-feather="log-in" class="me-2"></i>
+                Quick Check-in
+            </button>
+        `;
+    }
+    
+    actionButtons += `
+        <a href="/equipment/${equipment.id}" class="btn btn-outline-primary btn-sm w-100">
+            <i data-feather="eye" class="me-2"></i>
+            View Details
+        </a>
+    `;
+    
+    document.getElementById('action-buttons').innerHTML = actionButtons;
+    document.getElementById('scan-result-card').classList.remove('d-none');
+    
+    // Refresh feather icons
+    feather.replace();
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'available': '<span class="badge bg-success">Available</span>',
+        'in-use': '<span class="badge bg-warning">In Use</span>',
+        'maintenance': '<span class="badge bg-danger">Maintenance</span>'
+    };
+    return badges[status] || `<span class="badge bg-secondary">${status}</span>`;
+}
+
+function quickCheckout(equipmentId) {
+    document.getElementById('checkout-equipment-id').value = equipmentId;
+    const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+    modal.show();
+}
+
+function quickCheckin(equipmentId) {
+    document.getElementById('checkin-equipment-id').value = equipmentId;
+    const modal = new bootstrap.Modal(document.getElementById('checkinModal'));
+    modal.show();
+}
+
+function showCheckoutModal() {
+    if (currentEquipment && currentEquipment.status === 'available') {
+        quickCheckout(currentEquipment.id);
+    } else {
+        showAlert('Please scan an available equipment first', 'warning');
+    }
+}
+
+function showCheckinModal() {
+    if (currentEquipment && currentEquipment.status === 'in-use') {
+        quickCheckin(currentEquipment.id);
+    } else {
+        showAlert('Please scan an equipment that is currently in use', 'warning');
+    }
+}
+
+async function submitQuickCheckout() {
+    const equipmentId = document.getElementById('checkout-equipment-id').value;
+    const checkedOutBy = document.getElementById('checkout-person').value.trim();
+    const returnDate = document.getElementById('checkout-return-date').value;
+    const notes = document.getElementById('checkout-notes').value.trim();
+    
+    if (!checkedOutBy) {
+        showAlert('Please enter who is checking out the equipment', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/quick-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                equipment_id: equipmentId,
+                checked_out_by: checkedOutBy,
+                expected_return_date: returnDate,
+                notes: notes
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+            
+            // Update equipment status in display
+            if (currentEquipment && currentEquipment.id == equipmentId) {
+                currentEquipment.status = 'in-use';
+                displayEquipmentInfo(currentEquipment);
+            }
+            
+            // Clear form
+            document.getElementById('quick-checkout-form').reset();
+        } else {
+            showAlert(result.error || 'Checkout failed', 'danger');
+        }
+    } catch (error) {
+        showAlert('Network error during checkout', 'danger');
+    }
+}
+
+async function submitQuickCheckin() {
+    const equipmentId = document.getElementById('checkin-equipment-id').value;
+    const checkedInBy = document.getElementById('checkin-person').value.trim();
+    const condition = document.getElementById('checkin-condition').value;
+    const notes = document.getElementById('checkin-notes').value.trim();
+    
+    if (!checkedInBy) {
+        showAlert('Please enter who is checking in the equipment', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/quick-checkin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                equipment_id: equipmentId,
+                checked_in_by: checkedInBy,
+                condition: condition,
+                notes: notes
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert(result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('checkinModal')).hide();
+            
+            // Update equipment status in display
+            if (currentEquipment && currentEquipment.id == equipmentId) {
+                currentEquipment.status = condition === 'poor' ? 'maintenance' : 'available';
+                displayEquipmentInfo(currentEquipment);
+            }
+            
+            // Clear form
+            document.getElementById('quick-checkin-form').reset();
+        } else {
+            showAlert(result.error || 'Check-in failed', 'danger');
+        }
+    } catch (error) {
+        showAlert('Network error during check-in', 'danger');
+    }
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 400px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 4000);
+}
+</script>
+{% endblock %}

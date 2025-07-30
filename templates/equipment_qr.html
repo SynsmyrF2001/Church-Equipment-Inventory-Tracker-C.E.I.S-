@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}QR Code - {{ equipment.name }} - Church Equipment Inventory{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i data-feather="aperture" class="me-2"></i>
+                    QR Code for {{ equipment.name }}
+                </h1>
+                <div>
+                    <a href="{{ url_for('equipment_detail', id=equipment.id) }}" class="btn btn-outline-secondary me-2">
+                        <i data-feather="arrow-left" class="me-2"></i>
+                        Back to Equipment
+                    </a>
+                    <button class="btn btn-primary" onclick="printQR()">
+                        <i data-feather="printer" class="me-2"></i>
+                        Print QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="aperture" class="me-2"></i>
+                        Equipment QR Code
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if qr_code %}
+                        <div id="qrCodeContainer" class="mb-3">
+                            <img src="{{ qr_code }}" alt="QR Code for {{ equipment.name }}" 
+                                 class="img-fluid border rounded" 
+                                 style="max-width: 300px; max-height: 300px;">
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i data-feather="info" class="me-2"></i>How to Use This QR Code</h6>
+                            <ul class="text-start mb-0">
+                                <li>Print and attach to equipment</li>
+                                <li>Scan with any QR code reader</li>
+                                <li>Use our mobile scan feature for quick checkout/checkin</li>
+                                <li>Access equipment details instantly</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('scan_equipment', equipment_id=equipment.id) }}" class="btn btn-success">
+                                <i data-feather="smartphone" class="me-2"></i>
+                                Test Scan Result
+                            </a>
+                            <button class="btn btn-outline-primary" onclick="downloadQR()">
+                                <i data-feather="download" class="me-2"></i>
+                                Download QR Code
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <h6><i data-feather="alert-circle" class="me-2"></i>QR Code Generation Failed</h6>
+                            <p>Unable to generate QR code for this equipment. Please try again later.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="package" class="me-2"></i>
+                        Equipment Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Name:</strong></td>
+                            <td>{{ equipment.name }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Category:</strong></td>
+                            <td>
+                                <span class="badge bg-secondary">{{ equipment.category.title() }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status:</strong></td>
+                            <td>
+                                {% if equipment.status == 'available' %}
+                                    <span class="badge bg-success">Available</span>
+                                {% elif equipment.status == 'in-use' %}
+                                    <span class="badge bg-warning">In Use</span>
+                                {% elif equipment.status == 'maintenance' %}
+                                    <span class="badge bg-danger">Maintenance</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Location:</strong></td>
+                            <td>{{ equipment.location or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Model:</strong></td>
+                            <td>{{ equipment.model or 'Not specified' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Serial Number:</strong></td>
+                            <td>{{ equipment.serial_number or 'Not specified' }}</td>
+                        </tr>
+                    </table>
+                    
+                    {% if equipment.description %}
+                        <div class="mt-3">
+                            <h6>Description:</h6>
+                            <p class="text-muted">{{ equipment.description }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- QR Code Data Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="code" class="me-2"></i>
+                        QR Code Contains
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        This QR code contains equipment information in JSON format including:
+                        <ul class="mt-2">
+                            <li>Equipment ID: {{ equipment.id }}</li>
+                            <li>Equipment Name: {{ equipment.name }}</li>
+                            <li>Category: {{ equipment.category }}</li>
+                            <li>Direct Link: /equipment/{{ equipment.id }}</li>
+                            <li>Scan Link: /scan/{{ equipment.id }}</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print-specific styles -->
+<style>
+@media print {
+    .container-fluid, .row, .col-md-6 {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .btn, .alert, .navbar, footer {
+        display: none !important;
+    }
+    
+    #qrCodeContainer {
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    #qrCodeContainer img {
+        max-width: 200px !important;
+        max-height: 200px !important;
+    }
+    
+    .card-header {
+        background: none !important;
+        border: none !important;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .equipment-info {
+        font-size: 12px;
+        margin-top: 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function printQR() {
+    window.print();
+}
+
+function downloadQR() {
+    const qrImage = document.querySelector('#qrCodeContainer img');
+    if (qrImage) {
+        const link = document.createElement('a');
+        link.download = `{{ equipment.name|replace(' ', '_') }}_QR_Code.png`;
+        link.href = qrImage.src;
+        link.click();
+    }
+}
+</script>
+{% endblock %}
