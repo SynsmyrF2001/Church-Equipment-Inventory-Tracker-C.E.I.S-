@@ -172,12 +172,7 @@ python -m pytest tests/
    gunicorn -w 4 -b 0.0.0.0:8000 app:app
    ```
 
-### Docker Deployment (Coming Soon)
-```bash
-# Build and run with Docker
-docker build -t church-inventory .
-docker run -p 8000:8000 church-inventory
-```
+
 
 ## 🤝 Contributing
 

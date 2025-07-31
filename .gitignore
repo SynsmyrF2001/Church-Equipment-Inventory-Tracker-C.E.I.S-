@@ -211,5 +211,9 @@ settings.local.py
 .replit
 .replit.nix
 
+# Docker files (kept locally)
+Dockerfile
+docker-compose.yml
+
 # UV lock file (optional - you might want to include this for reproducible builds)
 # uv.lock 

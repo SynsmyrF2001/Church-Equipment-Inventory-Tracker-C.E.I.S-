@@ -20,19 +20,9 @@ python -c "from app import app, db; app.app_context().push(); db.create_all()"
 python app.py
 ```
 
-### 2. Docker Deployment
-```bash
-# Build the image
-docker build -t church-inventory .
 
-# Run the container
-docker run -p 8000:8000 \
-  -e SESSION_SECRET="your-secret-key" \
-  -e DATABASE_URL="sqlite:///church_inventory.db" \
-  church-inventory
-```
 
-### 3. Heroku Deployment
+### 2. Heroku Deployment
 ```bash
 # Install Heroku CLI and login
 heroku login
