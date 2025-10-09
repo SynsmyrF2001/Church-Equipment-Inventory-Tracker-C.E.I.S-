@@ -1,0 +1,95 @@
+# Docker Compose configuration for Church Equipment Inventory System
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: church_inventory_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-church_inventory}
+      POSTGRES_USER: ${POSTGRES_USER:-church_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme123}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-church_admin} -d ${POSTGRES_DB:-church_inventory}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - church_network
+
+  # Flask Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: church_inventory_web
+    restart: unless-stopped
+    environment:
+      # Database Configuration
+      DATABASE_URL: postgresql://${POSTGRES_USER:-church_admin}:${POSTGRES_PASSWORD:-changeme123}@db:5432/${POSTGRES_DB:-church_inventory}
+      
+      # Flask Configuration
+      FLASK_APP: app.py
+      FLASK_ENV: ${FLASK_ENV:-production}
+      DEBUG: ${DEBUG:-False}
+      
+      # Security
+      SESSION_SECRET: ${SESSION_SECRET:-please-change-this-secret-key-in-production}
+      
+      # Optional: Twilio for SMS (if using phone verification)
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:-}
+      
+      # Application Settings
+      MAX_CONTENT_LENGTH: 16777216  # 16MB
+      
+    ports:
+      - "8080:5000"
+    volumes:
+      - ./instance:/app/instance
+      - ./uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - church_network
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: church_inventory_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./static:/app/static:ro
+    depends_on:
+      - web
+    networks:
+      - church_network
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  church_network:
+    driver: bridge

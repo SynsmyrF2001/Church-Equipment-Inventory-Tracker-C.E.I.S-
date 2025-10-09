@@ -31,11 +31,39 @@ A comprehensive Flask-based web application designed to manage and track church 
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Method 1: Docker (Recommended for Easy Setup) 🐳
+
+The fastest way to run on your laptop - everything is containerized!
+
+1. **Install Docker Desktop**
+   - Download from: https://www.docker.com/products/docker-desktop
+   - Install and start Docker Desktop
+
+2. **Run the application**
+   ```bash
+   # Clone the repository
+   git clone https://github.com/yourusername/church-inventory-tracker.git
+   cd church-inventory-tracker
+   
+   # Start with one command!
+   ./docker-start.sh
+   ```
+
+3. **Access the application**
+   - Open your browser to `http://localhost:5000`
+   - That's it! The app and database are running. 🎉
+
+**For detailed Docker instructions, see [DOCKER.md](DOCKER.md)**
+
+---
+
+### Method 2: Traditional Python Installation
+
+#### Prerequisites
 - Python 3.11 or higher
 - pip or uv package manager
 
-### Installation
+#### Installation
 
 1. **Clone the repository**
    ```bash
@@ -43,7 +71,18 @@ A comprehensive Flask-based web application designed to manage and track church 
    cd church-inventory-tracker
    ```
 
-2. **Install dependencies**
+2. **Quick start script** (Automated)
+   ```bash
+   # macOS/Linux
+   ./quick_start.sh
+   
+   # Windows
+   quick_start.bat
+   ```
+
+   **OR Manual setup:**
+
+3. **Install dependencies**
    ```bash
    # Using uv (recommended)
    uv sync
@@ -52,23 +91,23 @@ A comprehensive Flask-based web application designed to manage and track church 
    pip install -r requirements.txt
    ```
 
-3. **Set up environment variables**
+4. **Set up environment variables**
    ```bash
    export SESSION_SECRET="your-secret-key-here"
    export DATABASE_URL="sqlite:///church_inventory.db"  # Optional, defaults to SQLite
    ```
 
-4. **Initialize the database**
+5. **Initialize the database**
    ```bash
    python -c "from app import app, db; app.app_context().push(); db.create_all()"
    ```
 
-5. **Run the application**
+6. **Run the application**
    ```bash
    python app.py
    ```
 
-6. **Access the application**
+7. **Access the application**
    Open your browser and navigate to `http://localhost:5000`
 
 ## 📁 Project Structure

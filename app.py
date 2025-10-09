@@ -105,5 +105,29 @@ with app.app_context():
     db.create_all()
     app.logger.info(f"Database initialized successfully: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
+
+# Health check endpoint for Docker/load balancers
+@app.route('/health')
+def health_check():
+    """Health check endpoint for monitoring and load balancers"""
+    try:
+        # Check database connection
+        db.session.execute(db.text('SELECT 1'))
+        return {
+            'status': 'healthy',
+            'database': 'connected',
+            'version': '1.0.0'
+        }, 200
+    except Exception as e:
+        app.logger.error(f"Health check failed: {e}")
+        return {
+            'status': 'unhealthy',
+            'database': 'disconnected',
+            'error': str(e)
+        }, 503
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('DEBUG', 'True').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug)
