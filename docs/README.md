@@ -1,10 +1,9 @@
-# 🏛️ Church Equipment Inventory System (C.E.I.S)
+# Church Equipment Inventory System
 
 A comprehensive Flask-based web application designed to manage and track church technical equipment inventory. Built with simplicity and usability in mind for church staff and volunteers.
 
 ![Church Inventory System](https://img.shields.io/badge/Python-3.11+-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.1.1+-green.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## 🌟 Features
@@ -29,11 +28,10 @@ A comprehensive Flask-based web application designed to manage and track church 
 - **Form Validation**: Comprehensive input validation and error handling
 - **Export Capabilities**: CSV export for equipment and history data
 - **Dark Theme**: Modern UI with dark mode support
-- **Docker Ready**: Fully containerized for easy deployment
 
 ## 🚀 Quick Start
 
-### Method 1: Docker (Recommended) 🐳
+### Method 1: Docker (Recommended for Easy Setup) 🐳
 
 The fastest way to run on your laptop - everything is containerized!
 
@@ -48,14 +46,14 @@ The fastest way to run on your laptop - everything is containerized!
    cd church-inventory-tracker
    
    # Start with one command!
-   ./scripts/docker-start.sh
+   ./docker-start.sh
    ```
 
 3. **Access the application**
-   - Open your browser to `http://localhost:8080`
+   - Open your browser to `http://localhost:5000`
    - That's it! The app and database are running. 🎉
 
-**For detailed Docker instructions, see [docs/DOCKER.md](docs/DOCKER.md)**
+**For detailed Docker instructions, see [DOCKER.md](DOCKER.md)**
 
 ---
 
@@ -76,7 +74,7 @@ The fastest way to run on your laptop - everything is containerized!
 2. **Quick start script** (Automated)
    ```bash
    # macOS/Linux
-   ./scripts/quick_start.sh
+   ./quick_start.sh
    
    # Windows
    quick_start.bat
@@ -116,40 +114,17 @@ The fastest way to run on your laptop - everything is containerized!
 
 ```
 ChurchInventoryTracker/
-├── 📁 docs/                    # Documentation
-│   ├── README.md              # Main documentation
-│   ├── DOCKER.md              # Docker deployment guide
-│   ├── DOCKER_QUICKSTART.md   # 3-minute Docker setup
-│   ├── SECURITY.md            # Security best practices
-│   ├── CONTRIBUTING.md        # Contribution guidelines
-│   └── DEPLOYMENT.md          # Production deployment
-│
-├── 📁 docker/                 # Docker configuration
-│   ├── Dockerfile             # Multi-stage Docker build
-│   ├── docker-compose.yml     # Container orchestration
-│   └── nginx/                 # Nginx configuration
-│
-├── 📁 scripts/                # Utility scripts
-│   ├── docker-start.sh        # One-command Docker setup
-│   ├── quick_start.sh         # Traditional Python setup
-│   ├── entrypoint.sh          # Container initialization
-│   └── GIT_COMMIT_COMMANDS.sh # Git helper script
-│
-├── 📁 config/                 # Configuration files
-│   └── env.example            # Environment variables template
-│
-├── 📁 static/                 # Static assets (CSS, JS, images)
-├── 📁 templates/              # HTML templates
-├── 📁 instance/               # Database files (not in git)
-│
-├── 🐍 app.py                  # Main Flask application
-├── 🐍 models.py               # Database models
-├── 🐍 routes.py               # Application routes
-├── 🐍 auth.py                 # Authentication system
-├── 🐍 forms.py                # Form definitions
-├── 🐍 qr_utils.py             # QR code utilities
-├── 📄 requirements.txt        # Python dependencies
-└── 📄 pyproject.toml          # Project configuration
+├── app.py                 # Main Flask application
+├── models.py             # Database models (Equipment, CheckoutHistory)
+├── forms.py              # Form definitions and validation
+├── routes.py             # Main application routes
+├── auth.py               # Authentication utilities
+├── auth_routes.py        # Authentication routes
+├── qr_utils.py           # QR code generation and scanning
+├── static/               # Static assets (CSS, JS, images)
+├── templates/            # HTML templates
+├── instance/             # Database files (not in git)
+└── pyproject.toml        # Project dependencies
 ```
 
 ## 🛠️ Configuration
@@ -236,14 +211,7 @@ python -m pytest tests/
    gunicorn -w 4 -b 0.0.0.0:8000 app:app
    ```
 
-### Docker Deployment
-```bash
-# Build and start with Docker
-docker-compose -f docker/docker-compose.yml up -d
 
-# Or use the quick start script
-./scripts/docker-start.sh
-```
 
 ## 🤝 Contributing
 
@@ -270,10 +238,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 If you have any questions or need help setting up the system, please:
-1. Check the [documentation](docs/)
+1. Check the [documentation](overview.md)
 2. Open an issue on GitHub
 3. Contact the development team
 
 ---
 
-**Made with ❤️ for church communities**
+**Made with ❤️ for church communities** 

@@ -24,7 +24,9 @@ class AuthService:
     """Main authentication service handling JWT tokens and verification codes"""
     
     def __init__(self):
-        self.jwt_secret = os.environ.get('SESSION_SECRET', 'default-secret-key')
+        self.jwt_secret = os.environ.get('SESSION_SECRET')
+        if not self.jwt_secret:
+            raise ValueError("SESSION_SECRET environment variable is required for JWT authentication")
         self.jwt_algorithm = 'HS256'
         self.token_expiry_hours = 24
         self.verification_code_expiry_minutes = 10

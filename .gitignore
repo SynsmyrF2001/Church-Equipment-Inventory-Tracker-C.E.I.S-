@@ -167,11 +167,16 @@ cython_debug/
 *.sqlite3
 instance/
 
-# Environment variables
+# Environment variables and secrets
 .env
 .env.local
 .env.production
 .env.staging
+.env.*
+*.env
+secrets/
+credentials/
+config/secrets/
 
 # OS generated files
 .DS_Store

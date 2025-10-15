@@ -46,10 +46,10 @@ if [ ! -f ".env" ]; then
 SESSION_SECRET=${SESSION_SECRET}
 
 # Database Configuration (PostgreSQL)
-DATABASE_URL=postgresql://church_admin:changeme123@db:5432/church_inventory
+DATABASE_URL=postgresql://church_admin:CHANGE_THIS_PASSWORD_IN_PRODUCTION@db:5432/church_inventory
 POSTGRES_DB=church_inventory
 POSTGRES_USER=church_admin
-POSTGRES_PASSWORD=changeme123
+POSTGRES_PASSWORD=CHANGE_THIS_PASSWORD_IN_PRODUCTION
 
 # Flask Configuration
 FLASK_APP=app.py
@@ -72,7 +72,7 @@ fi
 
 echo ""
 echo "🔨 Building Docker images..."
-docker-compose build
+docker-compose -f docker/docker-compose.yml build
 
 echo ""
 echo "🚀 Starting services..."
@@ -81,28 +81,28 @@ echo "   - Flask Web Application"
 echo ""
 
 # Start docker-compose
-docker-compose up -d
+docker-compose -f docker/docker-compose.yml up -d
 
 echo ""
 echo "⏳ Waiting for services to be ready..."
 sleep 5
 
 # Check if services are running
-if docker-compose ps | grep -q "Up"; then
+if docker-compose -f docker/docker-compose.yml ps | grep -q "Up"; then
     echo ""
     echo "🎉 Success! Your application is now running!"
     echo ""
     echo "📱 Access the application:"
     echo "   🌐 Web Interface: http://localhost:8080"
-    echo "   🗄️  Database: localhost:5432"
+    echo "   🗄️  Database: localhost:5433"
     echo ""
     echo "💡 Note: Using port 8080 (port 5000 is used by macOS AirPlay)"
     echo ""
     echo "📊 Useful commands:"
-    echo "   View logs:          docker-compose logs -f"
-    echo "   Stop application:   docker-compose down"
-    echo "   Restart:            docker-compose restart"
-    echo "   Check status:       docker-compose ps"
+    echo "   View logs:          docker-compose -f docker/docker-compose.yml logs -f"
+    echo "   Stop application:   docker-compose -f docker/docker-compose.yml down"
+    echo "   Restart:            docker-compose -f docker/docker-compose.yml restart"
+    echo "   Check status:       docker-compose -f docker/docker-compose.yml ps"
     echo ""
     echo "📖 For more information, see DOCKER.md"
     echo ""
@@ -119,7 +119,7 @@ if docker-compose ps | grep -q "Up"; then
     fi
     
 else
-    echo "❌ Something went wrong. Check the logs with: docker-compose logs"
+    echo "❌ Something went wrong. Check the logs with: docker-compose -f docker/docker-compose.yml logs"
     exit 1
 fi
 
